@@ -12,6 +12,8 @@ import {
 import type { SongVersion } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ChordChart } from "@/components/chord-chart";
+import { TransposeControl } from "@/components/transpose-control";
+import { transposeText } from "@/lib/transpose";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -222,10 +224,16 @@ export function SongVersionsPanel({
   const deleteVersion = useDeleteSongVersion();
 
   const [formMode, setFormMode] = useState<null | "add" | SongVersion>(null);
+  // semitones per tab: "original" | version id as string
+  const [semitones, setSemitones] = useState<Record<string, number>>({});
 
   const openAdd = () => setFormMode("add");
   const openEdit = (v: SongVersion) => setFormMode(v);
   const closeForm = () => setFormMode(null);
+
+  const getSemitones = (key: string) => semitones[key] ?? 0;
+  const setTabSemitones = (key: string, n: number) =>
+    setSemitones((prev) => ({ ...prev, [key]: n }));
 
   const handleDelete = (v: SongVersion) => {
     deleteVersion.mutate(
@@ -260,11 +268,7 @@ export function SongVersionsPanel({
       </div>
 
       {formMode !== null && (
-        <VersionForm
-          songId={songId}
-          editing={editingVersion}
-          onClose={closeForm}
-        />
+        <VersionForm songId={songId} editing={editingVersion} onClose={closeForm} />
       )}
 
       {isLoading ? (
@@ -282,17 +286,29 @@ export function SongVersionsPanel({
             ))}
           </TabsList>
 
+          {/* ── Original tab ── */}
           <TabsContent value="original" className="mt-4">
             {hasMainContent ? (
               <div className="space-y-4">
-                {mainKey && (
-                  <Badge variant="secondary" className="flex items-center gap-1 w-fit px-3 py-1.5">
-                    <Music className="w-3.5 h-3.5 opacity-70" />
-                    Key: {mainKey}
-                  </Badge>
-                )}
+                <div className="flex flex-wrap items-center gap-4">
+                  {mainKey && (
+                    <Badge variant="secondary" className="flex items-center gap-1 px-3 py-1.5">
+                      <Music className="w-3.5 h-3.5 opacity-70" />
+                      Key: {mainKey}
+                    </Badge>
+                  )}
+                  <TransposeControl
+                    semitones={getSemitones("original")}
+                    onChange={(n) => setTabSemitones("original", n)}
+                  />
+                </div>
                 <div className="bg-white dark:bg-zinc-950 rounded-xl border border-border shadow-sm p-6 overflow-x-auto">
-                  <ChordChart text={[mainLyrics, mainChords].filter(Boolean).join("\n\n")} />
+                  <ChordChart
+                    text={transposeText(
+                      [mainLyrics, mainChords].filter(Boolean).join("\n\n"),
+                      getSemitones("original")
+                    )}
+                  />
                 </div>
                 {mainNotes && (
                   <div className="bg-[#fff9e6] dark:bg-yellow-900/10 p-5 rounded-xl border border-yellow-200/50">
@@ -308,68 +324,84 @@ export function SongVersionsPanel({
             )}
           </TabsContent>
 
-          {versions.map((v) => (
-            <TabsContent key={v.id} value={String(v.id)} className="mt-4">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  {v.key ? (
-                    <Badge variant="secondary" className="flex items-center gap-1 px-3 py-1.5">
-                      <Music className="w-3.5 h-3.5 opacity-70" />
-                      Key: {v.key}
-                    </Badge>
-                  ) : <div />}
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => openEdit(v)}>
-                      <Pencil className="w-3.5 h-3.5 mr-1" />
-                      Edit
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="text-destructive hover:bg-destructive/10">
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete "{v.name}" version?</AlertDialogTitle>
-                          <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDelete(v)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+          {/* ── Additional version tabs ── */}
+          {versions.map((v) => {
+            const tabKey = String(v.id);
+            const st = getSemitones(tabKey);
+            return (
+              <TabsContent key={v.id} value={tabKey} className="mt-4">
+                <div className="space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
+                      {v.key && (
+                        <Badge variant="secondary" className="flex items-center gap-1 px-3 py-1.5">
+                          <Music className="w-3.5 h-3.5 opacity-70" />
+                          Key: {v.key}
+                        </Badge>
+                      )}
+                      <TransposeControl
+                        semitones={st}
+                        onChange={(n) => setTabSemitones(tabKey, n)}
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => openEdit(v)}>
+                        <Pencil className="w-3.5 h-3.5 mr-1" />
+                        Edit
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="text-destructive hover:bg-destructive/10">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete "{v.name}" version?</AlertDialogTitle>
+                            <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(v)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
+
+                  {(v.lyrics || v.chords) ? (
+                    <div className="bg-white dark:bg-zinc-950 rounded-xl border border-border shadow-sm p-6 overflow-x-auto">
+                      <ChordChart
+                        text={transposeText(
+                          [v.lyrics, v.chords].filter(Boolean).join("\n\n"),
+                          st
+                        )}
+                      />
+                    </div>
+                  ) : (
+                    <div className="bg-card/50 border border-dashed border-border p-10 text-center rounded-xl">
+                      <p className="text-muted-foreground">No lyrics or chords yet.</p>
+                      <Button variant="link" className="mt-1 text-primary" onClick={() => openEdit(v)}>
+                        Add some now
+                      </Button>
+                    </div>
+                  )}
+
+                  {v.notes && (
+                    <div className="bg-[#fff9e6] dark:bg-yellow-900/10 p-5 rounded-xl border border-yellow-200/50">
+                      <p className="text-sm font-semibold uppercase tracking-wider text-yellow-800/70 mb-2 font-mono">Notes</p>
+                      <p className="whitespace-pre-wrap text-foreground/80 font-serif leading-relaxed">{v.notes}</p>
+                    </div>
+                  )}
                 </div>
-
-                {(v.lyrics || v.chords) ? (
-                  <div className="bg-white dark:bg-zinc-950 rounded-xl border border-border shadow-sm p-6 overflow-x-auto">
-                    <ChordChart text={[v.lyrics, v.chords].filter(Boolean).join("\n\n")} />
-                  </div>
-                ) : (
-                  <div className="bg-card/50 border border-dashed border-border p-10 text-center rounded-xl">
-                    <p className="text-muted-foreground">No lyrics or chords yet.</p>
-                    <Button variant="link" className="mt-1 text-primary" onClick={() => openEdit(v)}>
-                      Add some now
-                    </Button>
-                  </div>
-                )}
-
-                {v.notes && (
-                  <div className="bg-[#fff9e6] dark:bg-yellow-900/10 p-5 rounded-xl border border-yellow-200/50">
-                    <p className="text-sm font-semibold uppercase tracking-wider text-yellow-800/70 mb-2 font-mono">Notes</p>
-                    <p className="whitespace-pre-wrap text-foreground/80 font-serif leading-relaxed">{v.notes}</p>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-          ))}
+              </TabsContent>
+            );
+          })}
         </Tabs>
       )}
     </div>
