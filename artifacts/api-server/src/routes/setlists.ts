@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, setlistsTable, setlistSongsTable, songsTable, categoriesTable } from "@workspace/db";
-import { eq, desc, asc, sql } from "drizzle-orm";
+import { eq, desc, asc, sql, and, gt, lte, gte, lt } from "drizzle-orm";
 import {
   CreateSetlistBody,
   UpdateSetlistBody,
@@ -195,17 +195,32 @@ router.patch("/setlists/:id/songs/:songId", async (req, res) => {
   }
 
   const targetPosition = parsed.data.position;
-  const [displaced] = await db
-    .select()
-    .from(setlistSongsTable)
-    .where(eq(setlistSongsTable.setlistId, current.setlistId))
-    .where(eq(setlistSongsTable.position, targetPosition));
+  const oldPosition = current.position;
 
-  if (displaced && displaced.id !== current.id) {
-    await db
-      .update(setlistSongsTable)
-      .set({ position: current.position })
-      .where(eq(setlistSongsTable.id, displaced.id));
+  if (targetPosition !== oldPosition) {
+    if (targetPosition > oldPosition) {
+      await db
+        .update(setlistSongsTable)
+        .set({ position: sql`${setlistSongsTable.position} - 1` })
+        .where(
+          and(
+            eq(setlistSongsTable.setlistId, current.setlistId),
+            gt(setlistSongsTable.position, oldPosition),
+            lte(setlistSongsTable.position, targetPosition)
+          )
+        );
+    } else {
+      await db
+        .update(setlistSongsTable)
+        .set({ position: sql`${setlistSongsTable.position} + 1` })
+        .where(
+          and(
+            eq(setlistSongsTable.setlistId, current.setlistId),
+            gte(setlistSongsTable.position, targetPosition),
+            lt(setlistSongsTable.position, oldPosition)
+          )
+        );
+    }
   }
 
   const [ss] = await db

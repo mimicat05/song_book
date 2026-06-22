@@ -35,6 +35,89 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+type SetlistSongEntry = {
+  id: number;
+  position: number;
+  songId: number;
+  song: {
+    id: number;
+    title: string;
+    artist?: string | null;
+    key?: string | null;
+  };
+};
+
+function SortableSongRow({
+  entry,
+  onRemove,
+}: {
+  entry: SetlistSongEntry;
+  onRemove: (id: number) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: entry.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : undefined,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <Card className={`bg-card border-card-border overflow-hidden ${isDragging ? "shadow-lg" : ""}`}>
+        <CardContent className="p-0 flex items-stretch">
+          <div
+            className="w-10 flex items-center justify-center border-r border-border shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="w-4 h-4" />
+          </div>
+
+          <div className="p-4 flex-1 flex items-center justify-between gap-4">
+            <Link href={`/songs/${entry.song.id}`} className="flex-1 hover:underline decoration-primary/50 underline-offset-4">
+              <div className="font-medium text-lg font-serif">{entry.song.title}</div>
+              <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
+                {entry.song.artist && <span>{entry.song.artist}</span>}
+                {entry.song.key && (
+                  <span className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs text-foreground/80">
+                    {entry.song.key}
+                  </span>
+                )}
+              </div>
+            </Link>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
+              onClick={() => onRemove(entry.id)}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 export default function SetlistDetail() {
   const { id } = useParams();
@@ -46,13 +129,18 @@ export default function SetlistDetail() {
   const { data: setlist, isLoading, isError } = useGetSetlist(setlistId, { query: { enabled: !!setlistId } });
   const [songSearch, setSongSearch] = useState("");
   const { data: allSongs } = useListSongs({ search: songSearch || undefined });
-  
+
   const addSong = useAddSongToSetlist();
   const removeSong = useRemoveSongFromSetlist();
   const reorderSong = useReorderSetlistSong();
   const deleteSetlist = useDeleteSetlist();
 
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [localOrder, setLocalOrder] = useState<number[] | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  );
 
   const handleAddSong = (songId: number) => {
     addSong.mutate(
@@ -60,8 +148,9 @@ export default function SetlistDetail() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getGetSetlistQueryKey(setlistId) });
+          setLocalOrder(null);
           toast({ title: "Song added to setlist" });
-        }
+        },
       }
     );
   };
@@ -72,31 +161,8 @@ export default function SetlistDetail() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getGetSetlistQueryKey(setlistId) });
-        }
-      }
-    );
-  };
-
-  const moveUp = (entryId: number, currentPos: number) => {
-    if (currentPos <= 1) return;
-    reorderSong.mutate(
-      { id: setlistId, songId: entryId, data: { position: currentPos - 1 } },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getGetSetlistQueryKey(setlistId) });
-        }
-      }
-    );
-  };
-
-  const moveDown = (entryId: number, currentPos: number, maxPos: number) => {
-    if (currentPos >= maxPos) return;
-    reorderSong.mutate(
-      { id: setlistId, songId: entryId, data: { position: currentPos + 1 } },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getGetSetlistQueryKey(setlistId) });
-        }
+          setLocalOrder(null);
+        },
       }
     );
   };
@@ -109,7 +175,34 @@ export default function SetlistDetail() {
           queryClient.invalidateQueries({ queryKey: getListSetlistsQueryKey() });
           toast({ title: "Setlist deleted" });
           setLocation("/setlists");
-        }
+        },
+      }
+    );
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id || !sortedSongs) return;
+
+    const oldIndex = sortedSongs.findIndex((s) => s.id === active.id);
+    const newIndex = sortedSongs.findIndex((s) => s.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(sortedSongs, oldIndex, newIndex);
+    setLocalOrder(reordered.map((s) => s.id));
+
+    const newPosition = newIndex + 1;
+    reorderSong.mutate(
+      { id: setlistId, songId: sortedSongs[oldIndex].id, data: { position: newPosition } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getGetSetlistQueryKey(setlistId) });
+          setLocalOrder(null);
+        },
+        onError: () => {
+          setLocalOrder(null);
+          toast({ title: "Could not reorder", variant: "destructive" });
+        },
       }
     );
   };
@@ -120,7 +213,9 @@ export default function SetlistDetail() {
         <div className="h-12 w-64 bg-muted rounded"></div>
         <div className="h-8 w-48 bg-muted rounded"></div>
         <div className="space-y-3 mt-8">
-          {[1,2,3,4].map(i => <div key={i} className="h-16 bg-muted rounded-xl"></div>)}
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-16 bg-muted rounded-xl"></div>
+          ))}
         </div>
       </div>
     );
@@ -137,11 +232,13 @@ export default function SetlistDetail() {
     );
   }
 
-  // Ensure songs are sorted by position
-  const sortedSongs = [...(setlist.songs || [])].sort((a, b) => a.position - b.position);
-  // Songs already in setlist
-  const existingSongIds = new Set(sortedSongs.map(s => s.songId));
-  const availableSongs = allSongs?.filter(s => !existingSongIds.has(s.id)) || [];
+  const baseSorted = [...(setlist.songs || [])].sort((a, b) => a.position - b.position);
+  const sortedSongs = localOrder
+    ? localOrder.map((id) => baseSorted.find((s) => s.id === id)!).filter(Boolean)
+    : baseSorted;
+
+  const existingSongIds = new Set(sortedSongs.map((s) => s.songId));
+  const availableSongs = allSongs?.filter((s) => !existingSongIds.has(s.id)) || [];
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-20">
@@ -154,12 +251,12 @@ export default function SetlistDetail() {
             </Button>
           </Link>
           <h1 className="text-4xl md:text-5xl font-serif text-foreground tracking-tight mb-4">{setlist.name}</h1>
-          
+
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-muted-foreground">
             {setlist.date && (
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
-                {format(parseISO(setlist.date), 'MMMM d, yyyy')}
+                {format(parseISO(setlist.date), "MMMM d, yyyy")}
               </div>
             )}
             <div className="flex items-center gap-2 font-medium text-foreground">
@@ -197,7 +294,7 @@ export default function SetlistDetail() {
       <div className="border-t border-border pt-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-serif">Lineup</h2>
-          
+
           <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -220,12 +317,13 @@ export default function SetlistDetail() {
               </div>
               <div className="flex-1 overflow-y-auto pr-2 space-y-2">
                 {availableSongs.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No songs found.
-                  </div>
+                  <div className="text-center py-8 text-muted-foreground">No songs found.</div>
                 ) : (
-                  availableSongs.map(song => (
-                    <div key={song.id} className="flex items-center justify-between p-3 border rounded-lg hover:border-primary/50 transition-colors">
+                  availableSongs.map((song) => (
+                    <div
+                      key={song.id}
+                      className="flex items-center justify-between p-3 border rounded-lg hover:border-primary/50 transition-colors"
+                    >
                       <div>
                         <div className="font-medium">{song.title}</div>
                         {song.artist && <div className="text-xs text-muted-foreground">{song.artist}</div>}
@@ -249,54 +347,15 @@ export default function SetlistDetail() {
             </Button>
           </div>
         ) : (
-          <div className="space-y-3">
-            {sortedSongs.map((setlistSong, index) => (
-              <Card key={setlistSong.id} className="bg-card border-card-border overflow-hidden">
-                <CardContent className="p-0 flex items-stretch">
-                  <div className="w-12 bg-muted/30 flex flex-col items-center justify-center border-r border-border shrink-0 py-2">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-6 w-6 text-muted-foreground" 
-                      disabled={index === 0}
-                      onClick={() => moveUp(setlistSong.id, setlistSong.position)}
-                    >
-                      ▲
-                    </Button>
-                    <span className="text-xs font-medium text-muted-foreground my-1">{setlistSong.position}</span>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-6 w-6 text-muted-foreground"
-                      disabled={index === sortedSongs.length - 1}
-                      onClick={() => moveDown(setlistSong.id, setlistSong.position, sortedSongs.length)}
-                    >
-                      ▼
-                    </Button>
-                  </div>
-                  
-                  <div className="p-4 flex-1 flex items-center justify-between gap-4">
-                    <Link href={`/songs/${setlistSong.song.id}`} className="flex-1 hover:underline decoration-primary/50 underline-offset-4">
-                      <div className="font-medium text-lg font-serif">{setlistSong.song.title}</div>
-                      <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                        {setlistSong.song.artist && <span>{setlistSong.song.artist}</span>}
-                        {setlistSong.song.key && <span className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs text-foreground/80">{setlistSong.song.key}</span>}
-                      </div>
-                    </Link>
-                    
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
-                      onClick={() => handleRemoveSong(setlistSong.id)}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={sortedSongs.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+              <div className="space-y-3">
+                {sortedSongs.map((entry) => (
+                  <SortableSongRow key={entry.id} entry={entry} onRemove={handleRemoveSong} />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         )}
       </div>
     </div>
