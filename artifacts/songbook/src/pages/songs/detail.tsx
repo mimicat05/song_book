@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, Link, useLocation } from "wouter";
 import { useGetSong, useDeleteSong, getListSongsQueryKey, getGetSongStatsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -24,6 +25,7 @@ export default function SongDetail() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const songId = parseInt(id || "0", 10);
+  const [activeVersionTitle, setActiveVersionTitle] = useState<string | null>(null);
 
   const { data: song, isLoading, isError } = useGetSong(songId, { query: { enabled: !!songId } });
   const deleteSong = useDeleteSong();
@@ -85,7 +87,7 @@ export default function SongDetail() {
             </Button>
           </Link>
           <div className="flex flex-wrap items-center gap-3 mb-2">
-            <h1 className="text-4xl md:text-5xl font-serif text-foreground tracking-tight">{song.title}</h1>
+            <h1 className="text-4xl md:text-5xl font-serif text-foreground tracking-tight">{activeVersionTitle ?? song.title}</h1>
             {song.categoryName && (
               <span
                 className="px-3 py-1 rounded-full text-xs font-medium border mt-1 md:mt-0"
@@ -142,6 +144,7 @@ export default function SongDetail() {
         mainChords={song.chords}
         mainKey={song.key}
         mainNotes={song.notes}
+        onVersionChange={setActiveVersionTitle}
       />
     </div>
   );

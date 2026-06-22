@@ -216,6 +216,7 @@ interface SongVersionsPanelProps {
   mainChords?: string | null;
   mainKey?: string | null;
   mainNotes?: string | null;
+  onVersionChange?: (versionTitle: string | null) => void;
 }
 
 export function SongVersionsPanel({
@@ -224,6 +225,7 @@ export function SongVersionsPanel({
   mainChords,
   mainKey,
   mainNotes,
+  onVersionChange,
 }: SongVersionsPanelProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -281,7 +283,14 @@ export function SongVersionsPanel({
       {isLoading ? (
         <div className="h-40 bg-muted animate-pulse rounded-xl" />
       ) : (
-        <Tabs defaultValue="original">
+        <Tabs defaultValue="original" onValueChange={(val) => {
+          if (val === "original") {
+            onVersionChange?.(null);
+          } else {
+            const v = versions.find((v) => String(v.id) === val);
+            onVersionChange?.(v?.title ?? null);
+          }
+        }}>
           <TabsList className="flex flex-wrap gap-1 h-auto bg-muted/50 p-1">
             <TabsTrigger value="original" className="text-sm">
               Original

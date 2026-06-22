@@ -202,9 +202,11 @@ export default function SongsList() {
             const visibleVersions = (song.versions ?? []).filter(
               (v) => !language || v.name === language
             );
+            const showMainCard = !language || song.language === language;
+            if (!showMainCard && visibleVersions.length === 0) return null;
             return (
               <div key={song.id} className="space-y-1.5">
-                <SongCard song={song} />
+                {showMainCard && <SongCard song={song} />}
                 {visibleVersions.map((version) => (
                   <VersionCard key={`${song.id}-${version.name}`} song={song} version={version} />
                 ))}
