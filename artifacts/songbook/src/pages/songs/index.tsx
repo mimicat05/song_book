@@ -67,7 +67,7 @@ function SongCard({ song }: { song: Song }) {
 
 function VersionCard({ song, version }: { song: Song; version: { name: string; title?: string | null } }) {
   const flag = LANG_FLAG[version.name] ?? "🌐";
-  const displayTitle = version.title || song.title;
+  const versionTitle = version.title && version.title !== song.title ? version.title : null;
 
   return (
     <Link href={`/songs/${song.id}`}>
@@ -78,7 +78,9 @@ function VersionCard({ song, version }: { song: Song; version: { name: string; t
               <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-background text-muted-foreground border border-border shrink-0">
                 {flag} {version.name}
               </span>
-              <h3 className="text-xl font-medium text-foreground group-hover:text-primary transition-colors font-serif">{displayTitle}</h3>
+              {versionTitle && (
+                <h3 className="text-xl font-medium text-foreground group-hover:text-primary transition-colors font-serif">{versionTitle}</h3>
+              )}
             </div>
             {song.artist && (
               <p className="text-sm text-muted-foreground mt-1">{song.artist}</p>
