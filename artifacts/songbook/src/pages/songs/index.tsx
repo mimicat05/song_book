@@ -198,14 +198,19 @@ export default function SongsList() {
         </div>
       ) : (
         <div className="space-y-3">
-          {songs.map((song) => (
-            <div key={song.id} className="space-y-1.5">
-              <SongCard song={song} />
-              {song.versions?.map((version) => (
-                <VersionCard key={`${song.id}-${version.name}`} song={song} version={version} />
-              ))}
-            </div>
-          ))}
+          {songs.map((song) => {
+            const visibleVersions = (song.versions ?? []).filter(
+              (v) => !language || v.name === language
+            );
+            return (
+              <div key={song.id} className="space-y-1.5">
+                <SongCard song={song} />
+                {visibleVersions.map((version) => (
+                  <VersionCard key={`${song.id}-${version.name}`} song={song} version={version} />
+                ))}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
