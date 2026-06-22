@@ -74,7 +74,7 @@ export default function Dashboard() {
             </h2>
             <Link href="/songs" className="text-sm text-primary hover:underline">View all</Link>
           </div>
-          {stats.recentSongs.length === 0 ? (
+          {(stats.recentSongs ?? []).length === 0 ? (
             <Card className="border-dashed bg-transparent border-muted">
               <CardContent className="py-12 text-center text-muted-foreground">
                 <p>No songs yet. Time to start writing.</p>
@@ -117,7 +117,7 @@ export default function Dashboard() {
             </h2>
             <Link href="/categories" className="text-sm text-primary hover:underline">Manage</Link>
           </div>
-          {stats.byCategory.length === 0 ? (
+          {(stats.byCategory ?? []).length === 0 ? (
             <Card className="border-dashed bg-transparent border-muted">
               <CardContent className="py-12 text-center text-muted-foreground">
                 <p>No categories yet. Create some to organize your music.</p>
