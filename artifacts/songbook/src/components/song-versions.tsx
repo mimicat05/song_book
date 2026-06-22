@@ -17,13 +17,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -36,7 +29,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, Loader2, Music } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Music, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const versionSchema = z.object({
@@ -48,14 +41,13 @@ const versionSchema = z.object({
 });
 type VersionFormValues = z.infer<typeof versionSchema>;
 
-interface VersionFormDialogProps {
+interface VersionFormProps {
   songId: number;
-  existing?: SongVersion;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  editing: SongVersion | null;
+  onClose: () => void;
 }
 
-function VersionFormDialog({ songId, existing, open, onOpenChange }: VersionFormDialogProps) {
+function VersionForm({ songId, editing, onClose }: VersionFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const createVersion = useCreateSongVersion();
@@ -64,87 +56,58 @@ function VersionFormDialog({ songId, existing, open, onOpenChange }: VersionForm
   const form = useForm<VersionFormValues>({
     resolver: zodResolver(versionSchema),
     defaultValues: {
-      name: existing?.name ?? "",
-      lyrics: existing?.lyrics ?? "",
-      chords: existing?.chords ?? "",
-      key: existing?.key ?? "",
-      notes: existing?.notes ?? "",
+      name: editing?.name ?? "",
+      lyrics: editing?.lyrics ?? "",
+      chords: editing?.chords ?? "",
+      key: editing?.key ?? "",
+      notes: editing?.notes ?? "",
     },
   });
 
-  const isLoading = createVersion.isPending || updateVersion.isPending;
+  const isSubmitting = createVersion.isPending || updateVersion.isPending;
 
   const handleSubmit = (data: VersionFormValues) => {
     const onSuccess = () => {
       queryClient.invalidateQueries({ queryKey: getListSongVersionsQueryKey(songId) });
       toast({
-        title: existing ? "Version updated" : "Version added",
-        description: existing
-          ? `"${data.name}" has been updated.`
-          : `"${data.name}" version has been added.`,
+        title: editing ? "Version updated" : "Version added",
+        description: `"${data.name}" has been ${editing ? "updated" : "added"}.`,
       });
-      onOpenChange(false);
-      form.reset();
+      onClose();
     };
     const onError = () => {
       toast({ title: "Error", description: "Could not save the version.", variant: "destructive" });
     };
 
-    if (existing) {
-      updateVersion.mutate({ id: songId, versionId: existing.id, data }, { onSuccess, onError });
+    if (editing) {
+      updateVersion.mutate({ id: songId, versionId: editing.id, data }, { onSuccess, onError });
     } else {
       createVersion.mutate({ id: songId, data }, { onSuccess, onError });
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) form.reset({ name: existing?.name ?? "", lyrics: existing?.lyrics ?? "", chords: existing?.chords ?? "", key: existing?.key ?? "", notes: existing?.notes ?? "" }); }}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{existing ? "Edit Version" : "Add New Version"}</DialogTitle>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5 pt-2">
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Version Name *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g. Tagalog, Live, Acoustic" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="key"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Key</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g. G Major" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+    <div className="border border-border rounded-xl p-6 bg-card space-y-5">
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-base">
+          {editing ? `Edit "${editing.name}"` : "Add New Version"}
+        </h3>
+        <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
+          <X className="w-4 h-4" />
+        </Button>
+      </div>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
             <FormField
               control={form.control}
-              name="lyrics"
+              name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Lyrics</FormLabel>
+                  <FormLabel>Version Name *</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Write the lyrics for this version..."
-                      className="min-h-[200px] font-serif text-base leading-relaxed resize-y"
-                      {...field}
-                    />
+                    <Input placeholder="e.g. Tagalog, Live, Acoustic" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -152,57 +115,89 @@ function VersionFormDialog({ songId, existing, open, onOpenChange }: VersionForm
             />
             <FormField
               control={form.control}
-              name="chords"
+              name="key"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Chords</FormLabel>
+                  <FormLabel>Key</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="[C] [G] [Am] [F]"
-                      className="min-h-[100px] font-mono resize-y"
-                      {...field}
-                    />
+                    <Input placeholder="e.g. G Major" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Notes</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Performance notes for this version..."
-                      className="min-h-[80px] resize-y"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  existing ? "Save Changes" : "Add Version"
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+          </div>
+
+          <FormField
+            control={form.control}
+            name="lyrics"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Lyrics</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Write the lyrics for this version..."
+                    className="min-h-[200px] font-serif text-base leading-relaxed resize-y bg-background"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="chords"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Chords</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="[C] [G] [Am] [F]"
+                    className="min-h-[80px] font-mono resize-y bg-background"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="notes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Notes</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Performance notes for this version..."
+                    className="min-h-[70px] resize-y bg-background"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="flex gap-3 pt-1">
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+              Cancel
+            </Button>
+            <Button type="submit" className="flex-1" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : editing ? "Save Changes" : "Add Version"}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 }
 
@@ -226,16 +221,19 @@ export function SongVersionsPanel({
   const { data: versions = [], isLoading } = useListSongVersions(songId);
   const deleteVersion = useDeleteSongVersion();
 
-  const [addOpen, setAddOpen] = useState(false);
-  const [editingVersion, setEditingVersion] = useState<SongVersion | null>(null);
+  const [formMode, setFormMode] = useState<null | "add" | SongVersion>(null);
 
-  const handleDelete = (version: SongVersion) => {
+  const openAdd = () => setFormMode("add");
+  const openEdit = (v: SongVersion) => setFormMode(v);
+  const closeForm = () => setFormMode(null);
+
+  const handleDelete = (v: SongVersion) => {
     deleteVersion.mutate(
-      { id: songId, versionId: version.id },
+      { id: songId, versionId: v.id },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListSongVersionsQueryKey(songId) });
-          toast({ title: "Version deleted", description: `"${version.name}" has been removed.` });
+          toast({ title: "Version deleted", description: `"${v.name}" has been removed.` });
         },
         onError: () => {
           toast({ title: "Error", description: "Could not delete the version.", variant: "destructive" });
@@ -245,6 +243,7 @@ export function SongVersionsPanel({
   };
 
   const hasMainContent = mainLyrics || mainChords;
+  const editingVersion = formMode !== null && formMode !== "add" ? (formMode as SongVersion) : null;
 
   return (
     <div className="space-y-4">
@@ -252,11 +251,21 @@ export function SongVersionsPanel({
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground font-mono">
           Versions
         </h2>
-        <Button variant="outline" size="sm" onClick={() => setAddOpen(true)}>
-          <Plus className="w-4 h-4 mr-1" />
-          Add Version
-        </Button>
+        {formMode === null && (
+          <Button variant="outline" size="sm" onClick={openAdd}>
+            <Plus className="w-4 h-4 mr-1" />
+            Add Version
+          </Button>
+        )}
       </div>
+
+      {formMode !== null && (
+        <VersionForm
+          songId={songId}
+          editing={editingVersion}
+          onClose={closeForm}
+        />
+      )}
 
       {isLoading ? (
         <div className="h-40 bg-muted animate-pulse rounded-xl" />
@@ -303,20 +312,14 @@ export function SongVersionsPanel({
             <TabsContent key={v.id} value={String(v.id)} className="mt-4">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    {v.key && (
-                      <Badge variant="secondary" className="flex items-center gap-1 px-3 py-1.5">
-                        <Music className="w-3.5 h-3.5 opacity-70" />
-                        Key: {v.key}
-                      </Badge>
-                    )}
-                  </div>
+                  {v.key ? (
+                    <Badge variant="secondary" className="flex items-center gap-1 px-3 py-1.5">
+                      <Music className="w-3.5 h-3.5 opacity-70" />
+                      Key: {v.key}
+                    </Badge>
+                  ) : <div />}
                   <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setEditingVersion(v)}
-                    >
+                    <Button variant="outline" size="sm" onClick={() => openEdit(v)}>
                       <Pencil className="w-3.5 h-3.5 mr-1" />
                       Edit
                     </Button>
@@ -329,9 +332,7 @@ export function SongVersionsPanel({
                       <AlertDialogContent>
                         <AlertDialogHeader>
                           <AlertDialogTitle>Delete "{v.name}" version?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This cannot be undone.
-                          </AlertDialogDescription>
+                          <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -354,7 +355,7 @@ export function SongVersionsPanel({
                 ) : (
                   <div className="bg-card/50 border border-dashed border-border p-10 text-center rounded-xl">
                     <p className="text-muted-foreground">No lyrics or chords yet.</p>
-                    <Button variant="link" className="mt-1 text-primary" onClick={() => setEditingVersion(v)}>
+                    <Button variant="link" className="mt-1 text-primary" onClick={() => openEdit(v)}>
                       Add some now
                     </Button>
                   </div>
@@ -370,20 +371,6 @@ export function SongVersionsPanel({
             </TabsContent>
           ))}
         </Tabs>
-      )}
-
-      <VersionFormDialog
-        songId={songId}
-        open={addOpen}
-        onOpenChange={setAddOpen}
-      />
-      {editingVersion && (
-        <VersionFormDialog
-          songId={songId}
-          existing={editingVersion}
-          open={!!editingVersion}
-          onOpenChange={(o) => { if (!o) setEditingVersion(null); }}
-        />
       )}
     </div>
   );
