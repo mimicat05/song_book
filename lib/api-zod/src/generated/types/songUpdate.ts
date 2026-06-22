@@ -10,6 +10,7 @@ export interface SongUpdate {
   /** @minLength 1 */
   title?: string;
   artist?: string;
+  language?: string;
   lyrics?: string;
   chords?: string;
   key?: string;

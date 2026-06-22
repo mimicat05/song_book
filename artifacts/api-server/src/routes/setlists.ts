@@ -184,15 +184,36 @@ router.patch("/setlists/:id/songs/:songId", async (req, res) => {
     res.status(400).json({ error: "Invalid request body" });
     return;
   }
-  const [ss] = await db
-    .update(setlistSongsTable)
-    .set({ position: parsed.data.position, notes: parsed.data.notes })
-    .where(eq(setlistSongsTable.id, params.data.songId))
-    .returning();
-  if (!ss) {
+
+  const [current] = await db
+    .select()
+    .from(setlistSongsTable)
+    .where(eq(setlistSongsTable.id, params.data.songId));
+  if (!current) {
     res.status(404).json({ error: "Not found" });
     return;
   }
+
+  const targetPosition = parsed.data.position;
+  const [displaced] = await db
+    .select()
+    .from(setlistSongsTable)
+    .where(eq(setlistSongsTable.setlistId, current.setlistId))
+    .where(eq(setlistSongsTable.position, targetPosition));
+
+  if (displaced && displaced.id !== current.id) {
+    await db
+      .update(setlistSongsTable)
+      .set({ position: current.position })
+      .where(eq(setlistSongsTable.id, displaced.id));
+  }
+
+  const [ss] = await db
+    .update(setlistSongsTable)
+    .set({ position: targetPosition, notes: parsed.data.notes })
+    .where(eq(setlistSongsTable.id, params.data.songId))
+    .returning();
+
   const [row] = await db
     .select({ song: songsTable, category: categoriesTable })
     .from(songsTable)

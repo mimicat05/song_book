@@ -66,10 +66,9 @@ export default function SetlistDetail() {
     );
   };
 
-  const handleRemoveSong = (setlistSongId: number) => {
+  const handleRemoveSong = (setlistSongEntryId: number) => {
     removeSong.mutate(
-      { id: setlistId, songId: setlistSongId }, // Warning: The API might expect the setlistSongId. Check schema!
-      // Looking at the openapi, the path is /api/setlists/{id}/songs/{songId}
+      { id: setlistId, songId: setlistSongEntryId },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getGetSetlistQueryKey(setlistId) });
@@ -78,10 +77,10 @@ export default function SetlistDetail() {
     );
   };
 
-  const moveUp = (songId: number, currentPos: number) => {
+  const moveUp = (entryId: number, currentPos: number) => {
     if (currentPos <= 1) return;
     reorderSong.mutate(
-      { id: setlistId, songId: songId, data: { position: currentPos - 1 } },
+      { id: setlistId, songId: entryId, data: { position: currentPos - 1 } },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getGetSetlistQueryKey(setlistId) });
@@ -90,10 +89,10 @@ export default function SetlistDetail() {
     );
   };
 
-  const moveDown = (songId: number, currentPos: number, maxPos: number) => {
+  const moveDown = (entryId: number, currentPos: number, maxPos: number) => {
     if (currentPos >= maxPos) return;
     reorderSong.mutate(
-      { id: setlistId, songId: songId, data: { position: currentPos + 1 } },
+      { id: setlistId, songId: entryId, data: { position: currentPos + 1 } },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getGetSetlistQueryKey(setlistId) });
@@ -270,7 +269,7 @@ export default function SetlistDetail() {
                       size="icon" 
                       className="h-6 w-6 text-muted-foreground" 
                       disabled={index === 0}
-                      onClick={() => moveUp(setlistSong.songId, setlistSong.position)}
+                      onClick={() => moveUp(setlistSong.id, setlistSong.position)}
                     >
                       ▲
                     </Button>
@@ -280,7 +279,7 @@ export default function SetlistDetail() {
                       size="icon" 
                       className="h-6 w-6 text-muted-foreground"
                       disabled={index === sortedSongs.length - 1}
-                      onClick={() => moveDown(setlistSong.songId, setlistSong.position, sortedSongs.length)}
+                      onClick={() => moveDown(setlistSong.id, setlistSong.position, sortedSongs.length)}
                     >
                       ▼
                     </Button>
@@ -299,7 +298,7 @@ export default function SetlistDetail() {
                       variant="ghost" 
                       size="icon" 
                       className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
-                      onClick={() => handleRemoveSong(setlistSong.songId)}
+                      onClick={() => handleRemoveSong(setlistSong.id)}
                     >
                       <X className="w-4 h-4" />
                     </Button>

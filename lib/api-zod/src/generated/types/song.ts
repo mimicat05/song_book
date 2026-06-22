@@ -12,6 +12,8 @@ export interface Song {
   /** @nullable */
   artist?: string | null;
   /** @nullable */
+  language?: string | null;
+  /** @nullable */
   lyrics?: string | null;
   /** @nullable */
   chords?: string | null;

@@ -529,14 +529,14 @@ components:
           type: string
         artist:
           type: ["string", "null"]
+        language:
+          type: ["string", "null"]
         lyrics:
           type: ["string", "null"]
         chords:
           type: ["string", "null"]
         key:
           type: ["string", "null"]
-        tempo:
-          type: ["integer", "null"]
         notes:
           type: ["string", "null"]
         categoryId:
@@ -559,14 +559,14 @@ components:
           minLength: 1
         artist:
           type: string
+        language:
+          type: string
         lyrics:
           type: string
         chords:
           type: string
         key:
           type: string
-        tempo:
-          type: integer
         notes:
           type: string
         categoryId:
@@ -580,14 +580,14 @@ components:
           minLength: 1
         artist:
           type: string
+        language:
+          type: string
         lyrics:
           type: string
         chords:
           type: string
         key:
           type: string
-        tempo:
-          type: integer
         notes:
           type: string
         categoryId:
