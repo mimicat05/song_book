@@ -9,20 +9,14 @@ import { Card, CardContent } from "@/components/ui/card";
 
 const LANGUAGES = [
   { value: undefined, label: "All" },
-  { value: "English", label: "🇺🇸 English" },
-  { value: "Tagalog", label: "🇵🇭 Tagalog" },
+  { value: "English", label: "English" },
+  { value: "Tagalog", label: "Tagalog" },
 ];
 
-const LANG_FLAG: Record<string, string> = {
-  English: "🇺🇸",
-  Tagalog: "🇵🇭",
-};
-
 function LangBadge({ language }: { language: string }) {
-  const flag = LANG_FLAG[language] ?? "🌐";
   return (
     <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
-      {flag} {language}
+      {language}
     </span>
   );
 }
@@ -66,7 +60,6 @@ function SongCard({ song }: { song: Song }) {
 }
 
 function VersionCard({ song, version }: { song: Song; version: { name: string; title?: string | null } }) {
-  const flag = LANG_FLAG[version.name] ?? "🌐";
   const versionTitle = version.title || null;
 
   return (
@@ -76,7 +69,7 @@ function VersionCard({ song, version }: { song: Song; version: { name: string; t
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-background text-muted-foreground border border-border shrink-0">
-                {flag} {version.name}
+                {version.name}
               </span>
               {versionTitle && (
                 <h3 className="text-xl font-medium text-foreground group-hover:text-primary transition-colors font-serif">{versionTitle}</h3>
