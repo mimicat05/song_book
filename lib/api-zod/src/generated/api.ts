@@ -160,6 +160,87 @@ export const GetSongStatsResponse = zod.object({
 
 
 /**
+ * @summary List versions of a song
+ */
+export const ListSongVersionsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ListSongVersionsResponseItem = zod.object({
+  "id": zod.number(),
+  "songId": zod.number(),
+  "name": zod.string(),
+  "lyrics": zod.string().nullish(),
+  "chords": zod.string().nullish(),
+  "key": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+export const ListSongVersionsResponse = zod.array(ListSongVersionsResponseItem)
+
+
+/**
+ * @summary Create a new version of a song
+ */
+export const CreateSongVersionParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+export const CreateSongVersionBody = zod.object({
+  "name": zod.string().min(1),
+  "lyrics": zod.string().optional(),
+  "chords": zod.string().optional(),
+  "key": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+
+/**
+ * @summary Update a song version
+ */
+export const UpdateSongVersionParams = zod.object({
+  "id": zod.coerce.number(),
+  "versionId": zod.coerce.number()
+})
+
+
+
+
+export const UpdateSongVersionBody = zod.object({
+  "name": zod.string().min(1).optional(),
+  "lyrics": zod.string().optional(),
+  "chords": zod.string().optional(),
+  "key": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+export const UpdateSongVersionResponse = zod.object({
+  "id": zod.number(),
+  "songId": zod.number(),
+  "name": zod.string(),
+  "lyrics": zod.string().nullish(),
+  "chords": zod.string().nullish(),
+  "key": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Delete a song version
+ */
+export const DeleteSongVersionParams = zod.object({
+  "id": zod.coerce.number(),
+  "versionId": zod.coerce.number()
+})
+
+
+/**
  * @summary List all categories
  */
 export const ListCategoriesResponseItem = zod.object({

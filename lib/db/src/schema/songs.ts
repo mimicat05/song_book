@@ -20,3 +20,19 @@ export const songsTable = pgTable("songs", {
 export const insertSongSchema = createInsertSchema(songsTable).omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertSong = z.infer<typeof insertSongSchema>;
 export type Song = typeof songsTable.$inferSelect;
+
+export const songVersionsTable = pgTable("song_versions", {
+  id: serial("id").primaryKey(),
+  songId: integer("song_id").notNull().references(() => songsTable.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  lyrics: text("lyrics"),
+  chords: text("chords"),
+  key: text("key"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertSongVersionSchema = createInsertSchema(songVersionsTable).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertSongVersion = z.infer<typeof insertSongVersionSchema>;
+export type SongVersion = typeof songVersionsTable.$inferSelect;

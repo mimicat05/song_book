@@ -11,6 +11,8 @@ tags:
     description: Health operations
   - name: songs
     description: Song operations
+  - name: songVersions
+    description: Song version operations
   - name: categories
     description: Category operations
   - name: setlists
@@ -146,6 +148,102 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SongStats"
+
+  /songs/{id}/versions:
+    get:
+      operationId: listSongVersions
+      tags: [songVersions]
+      summary: List versions of a song
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of song versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SongVersion"
+    post:
+      operationId: createSongVersion
+      tags: [songVersions]
+      summary: Create a new version of a song
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SongVersionInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SongVersion"
+
+  /songs/{id}/versions/{versionId}:
+    patch:
+      operationId: updateSongVersion
+      tags: [songVersions]
+      summary: Update a song version
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: versionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SongVersionUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SongVersion"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteSongVersion
+      tags: [songVersions]
+      summary: Delete a song version
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: versionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
 
   /categories:
     get:
@@ -628,5 +726,59 @@ components:
       properties:
         position:
           type: integer
+        notes:
+          type: string
+
+    SongVersion:
+      type: object
+      required: [id, songId, name, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        songId:
+          type: integer
+        name:
+          type: string
+        lyrics:
+          type: ["string", "null"]
+        chords:
+          type: ["string", "null"]
+        key:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    SongVersionInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        lyrics:
+          type: string
+        chords:
+          type: string
+        key:
+          type: string
+        notes:
+          type: string
+
+    SongVersionUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        lyrics:
+          type: string
+        chords:
+          type: string
+        key:
+          type: string
         notes:
           type: string

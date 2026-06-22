@@ -159,6 +159,40 @@ export interface SetlistSongOrder {
   notes?: string;
 }
 
+export interface SongVersion {
+  id: number;
+  songId: number;
+  name: string;
+  /** @nullable */
+  lyrics?: string | null;
+  /** @nullable */
+  chords?: string | null;
+  /** @nullable */
+  key?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SongVersionInput {
+  /** @minLength 1 */
+  name: string;
+  lyrics?: string;
+  chords?: string;
+  key?: string;
+  notes?: string;
+}
+
+export interface SongVersionUpdate {
+  /** @minLength 1 */
+  name?: string;
+  lyrics?: string;
+  chords?: string;
+  key?: string;
+  notes?: string;
+}
+
 export type ListSongsParams = {
 categoryId?: number;
 search?: string;

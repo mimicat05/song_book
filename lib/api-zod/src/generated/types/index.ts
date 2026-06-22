@@ -23,3 +23,6 @@ export * from './song';
 export * from './songInput';
 export * from './songStats';
 export * from './songUpdate';
+export * from './songVersion';
+export * from './songVersionInput';
+export * from './songVersionUpdate';

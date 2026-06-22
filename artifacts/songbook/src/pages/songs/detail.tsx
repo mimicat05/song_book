@@ -3,8 +3,8 @@ import { useGetSong, useDeleteSong, getListSongsQueryKey, getGetSongStatsQueryKe
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Edit, Trash2, Timer, Music, StickyNote } from "lucide-react";
-import { ChordChart } from "@/components/chord-chart";
+import { ChevronLeft, Edit, Trash2, Timer, Music } from "lucide-react";
+import { SongVersionsPanel } from "@/components/song-versions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -87,9 +87,9 @@ export default function SongDetail() {
           <div className="flex flex-wrap items-center gap-3 mb-2">
             <h1 className="text-4xl md:text-5xl font-serif text-foreground tracking-tight">{song.title}</h1>
             {song.categoryName && (
-              <span 
+              <span
                 className="px-3 py-1 rounded-full text-xs font-medium border mt-1 md:mt-0"
-                style={{ 
+                style={{
                   backgroundColor: `${song.categoryColor}15`,
                   color: song.categoryColor,
                   borderColor: `${song.categoryColor}30`
@@ -111,7 +111,7 @@ export default function SongDetail() {
               Edit
             </Button>
           </Link>
-          
+
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="outline" className="text-destructive border-border hover:bg-destructive/10">
@@ -137,12 +137,6 @@ export default function SongDetail() {
       </div>
 
       <div className="flex flex-wrap gap-4 pt-2">
-        {song.key && (
-          <Badge variant="secondary" className="px-3 py-1.5 text-sm font-medium bg-secondary text-secondary-foreground flex items-center gap-2">
-            <Music className="w-4 h-4 opacity-70" />
-            Key: {song.key}
-          </Badge>
-        )}
         {song.tempo && (
           <Badge variant="secondary" className="px-3 py-1.5 text-sm font-medium bg-secondary text-secondary-foreground flex items-center gap-2">
             <Timer className="w-4 h-4 opacity-70" />
@@ -151,34 +145,13 @@ export default function SongDetail() {
         )}
       </div>
 
-      <div className="space-y-6 mt-8">
-        {(song.lyrics || song.chords) ? (
-          <div className="bg-white dark:bg-zinc-950 rounded-xl border border-card-border shadow-sm p-6 md:p-10 overflow-x-auto">
-            <ChordChart
-              text={[song.lyrics, song.chords].filter(Boolean).join("\n\n")}
-            />
-          </div>
-        ) : (
-          <div className="bg-card/50 border border-dashed border-border p-12 text-center rounded-xl">
-            <p className="text-muted-foreground">No lyrics or chords added yet.</p>
-            <Link href={`/songs/${song.id}/edit`}>
-              <Button variant="link" className="mt-2 text-primary">Add some now</Button>
-            </Link>
-          </div>
-        )}
-
-        {song.notes && (
-          <div className="bg-[#fff9e6] dark:bg-yellow-900/10 p-6 rounded-xl border border-yellow-200/50 dark:border-yellow-900/30">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-yellow-800/70 dark:text-yellow-600 mb-3 flex items-center gap-2 font-mono">
-              <StickyNote className="w-4 h-4" />
-              Notes
-            </h3>
-            <p className="whitespace-pre-wrap text-foreground/80 font-serif leading-relaxed">
-              {song.notes}
-            </p>
-          </div>
-        )}
-      </div>
+      <SongVersionsPanel
+        songId={song.id}
+        mainLyrics={song.lyrics}
+        mainChords={song.chords}
+        mainKey={song.key}
+        mainNotes={song.notes}
+      />
     </div>
   );
 }

@@ -35,7 +35,10 @@ import type {
   Song,
   SongInput,
   SongStats,
-  SongUpdate
+  SongUpdate,
+  SongVersion,
+  SongVersionInput,
+  SongVersionUpdate
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -577,6 +580,301 @@ export function useGetSongStats<TData = Awaited<ReturnType<typeof getSongStats>>
 
 
 
+
+export const getListSongVersionsUrl = (id: number,) => {
+
+
+
+
+  return `/api/songs/${id}/versions`
+}
+
+/**
+ * @summary List versions of a song
+ */
+export const listSongVersions = async (id: number, options?: RequestInit): Promise<SongVersion[]> => {
+
+  return customFetch<SongVersion[]>(getListSongVersionsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListSongVersionsQueryKey = (id: number,) => {
+    return [
+    `/api/songs/${id}/versions`
+    ] as const;
+    }
+
+
+export const getListSongVersionsQueryOptions = <TData = Awaited<ReturnType<typeof listSongVersions>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSongVersions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSongVersionsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSongVersions>>> = ({ signal }) => listSongVersions(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSongVersions>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListSongVersionsQueryResult = NonNullable<Awaited<ReturnType<typeof listSongVersions>>>
+export type ListSongVersionsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List versions of a song
+ */
+
+export function useListSongVersions<TData = Awaited<ReturnType<typeof listSongVersions>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSongVersions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListSongVersionsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateSongVersionUrl = (id: number,) => {
+
+
+
+
+  return `/api/songs/${id}/versions`
+}
+
+/**
+ * @summary Create a new version of a song
+ */
+export const createSongVersion = async (id: number,
+    songVersionInput: SongVersionInput, options?: RequestInit): Promise<SongVersion> => {
+
+  return customFetch<SongVersion>(getCreateSongVersionUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      songVersionInput,)
+  }
+);}
+
+
+
+
+export const getCreateSongVersionMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSongVersion>>, TError,{id: number;data: BodyType<SongVersionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createSongVersion>>, TError,{id: number;data: BodyType<SongVersionInput>}, TContext> => {
+
+const mutationKey = ['createSongVersion'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSongVersion>>, {id: number;data: BodyType<SongVersionInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  createSongVersion(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateSongVersionMutationResult = NonNullable<Awaited<ReturnType<typeof createSongVersion>>>
+    export type CreateSongVersionMutationBody = BodyType<SongVersionInput>
+    export type CreateSongVersionMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a new version of a song
+ */
+export const useCreateSongVersion = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSongVersion>>, TError,{id: number;data: BodyType<SongVersionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createSongVersion>>,
+        TError,
+        {id: number;data: BodyType<SongVersionInput>},
+        TContext
+      > => {
+      return useMutation(getCreateSongVersionMutationOptions(options));
+    }
+
+export const getUpdateSongVersionUrl = (id: number,
+    versionId: number,) => {
+
+
+
+
+  return `/api/songs/${id}/versions/${versionId}`
+}
+
+/**
+ * @summary Update a song version
+ */
+export const updateSongVersion = async (id: number,
+    versionId: number,
+    songVersionUpdate: SongVersionUpdate, options?: RequestInit): Promise<SongVersion> => {
+
+  return customFetch<SongVersion>(getUpdateSongVersionUrl(id,versionId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      songVersionUpdate,)
+  }
+);}
+
+
+
+
+export const getUpdateSongVersionMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSongVersion>>, TError,{id: number;versionId: number;data: BodyType<SongVersionUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateSongVersion>>, TError,{id: number;versionId: number;data: BodyType<SongVersionUpdate>}, TContext> => {
+
+const mutationKey = ['updateSongVersion'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSongVersion>>, {id: number;versionId: number;data: BodyType<SongVersionUpdate>}> = (props) => {
+          const {id,versionId,data} = props ?? {};
+
+          return  updateSongVersion(id,versionId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateSongVersionMutationResult = NonNullable<Awaited<ReturnType<typeof updateSongVersion>>>
+    export type UpdateSongVersionMutationBody = BodyType<SongVersionUpdate>
+    export type UpdateSongVersionMutationError = ErrorType<void>
+
+    /**
+ * @summary Update a song version
+ */
+export const useUpdateSongVersion = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSongVersion>>, TError,{id: number;versionId: number;data: BodyType<SongVersionUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateSongVersion>>,
+        TError,
+        {id: number;versionId: number;data: BodyType<SongVersionUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateSongVersionMutationOptions(options));
+    }
+
+export const getDeleteSongVersionUrl = (id: number,
+    versionId: number,) => {
+
+
+
+
+  return `/api/songs/${id}/versions/${versionId}`
+}
+
+/**
+ * @summary Delete a song version
+ */
+export const deleteSongVersion = async (id: number,
+    versionId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteSongVersionUrl(id,versionId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteSongVersionMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSongVersion>>, TError,{id: number;versionId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteSongVersion>>, TError,{id: number;versionId: number}, TContext> => {
+
+const mutationKey = ['deleteSongVersion'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSongVersion>>, {id: number;versionId: number}> = (props) => {
+          const {id,versionId} = props ?? {};
+
+          return  deleteSongVersion(id,versionId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteSongVersionMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSongVersion>>>
+
+    export type DeleteSongVersionMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a song version
+ */
+export const useDeleteSongVersion = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSongVersion>>, TError,{id: number;versionId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteSongVersion>>,
+        TError,
+        {id: number;versionId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteSongVersionMutationOptions(options));
+    }
 
 export const getListCategoriesUrl = () => {
 
