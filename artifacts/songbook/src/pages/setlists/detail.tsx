@@ -210,7 +210,7 @@ export default function SetlistDetail() {
           
           <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-primary text-primary-foreground">
+              <Button>
                 <Plus className="w-4 h-4 mr-2" />
                 Add Song
               </Button>

@@ -39,13 +39,13 @@ export default function Dashboard() {
         </div>
         <div className="flex gap-3">
           <Link href="/songs/new">
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-medium">
+            <Button>
               <PlusCircle className="mr-2 h-4 w-4" />
               New Song
             </Button>
           </Link>
           <Link href="/setlists/new">
-            <Button variant="outline" className="border-border text-foreground hover:bg-muted">
+            <Button variant="outline">
               <PlusCircle className="mr-2 h-4 w-4" />
               New Setlist
             </Button>
@@ -84,17 +84,17 @@ export default function Dashboard() {
             <div className="space-y-3">
               {(stats.recentSongs ?? []).map((song) => (
                 <Link key={song.id} href={`/songs/${song.id}`}>
-                  <Card className="hover:border-primary/50 transition-colors cursor-pointer group shadow-sm bg-card border-card-border">
+                  <Card className="hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer group bg-card border-card-border">
                     <CardContent className="p-4 flex justify-between items-center">
                       <div>
-                        <h3 className="font-medium text-foreground group-hover:text-primary transition-colors text-lg">{song.title}</h3>
+                        <h3 className="font-serif text-foreground group-hover:text-primary transition-colors text-lg">{song.title}</h3>
                         {song.artist && <p className="text-sm text-muted-foreground">{song.artist}</p>}
                       </div>
                       {song.categoryName && (
                         <span 
                           className="px-2.5 py-1 rounded-full text-xs font-medium"
                           style={{ 
-                            backgroundColor: `${song.categoryColor}20`,
+                            backgroundColor: `${song.categoryColor}15`,
                             color: song.categoryColor 
                           }}
                         >

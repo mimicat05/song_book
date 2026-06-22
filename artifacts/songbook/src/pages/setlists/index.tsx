@@ -15,7 +15,7 @@ export default function SetlistsList() {
           <h1 className="text-4xl font-serif text-foreground tracking-tight">Setlists</h1>
         </div>
         <Link href="/setlists/new">
-          <Button className="bg-primary text-primary-foreground font-medium">
+          <Button>
             <PlusCircle className="mr-2 h-4 w-4" />
             New Setlist
           </Button>

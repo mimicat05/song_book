@@ -102,7 +102,7 @@ export default function CategoriesList() {
             setIsCreating(true);
             setEditingId(null);
             form.reset({ name: "", color: "#f97316" });
-          }} className="bg-primary text-primary-foreground">
+          }}>
             <PlusCircle className="mr-2 h-4 w-4" />
             New Category
           </Button>

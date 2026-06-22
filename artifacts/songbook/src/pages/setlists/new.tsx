@@ -54,7 +54,7 @@ export default function SetlistNew() {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-2xl mx-auto">
       <div>
         <Link href="/setlists">
-          <Button variant="ghost" size="sm" className="-ml-3 mb-4 text-muted-foreground hover:text-foreground">
+          <Button variant="ghost" size="sm" className="-ml-3 mb-2 text-muted-foreground hover:text-foreground">
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back to Setlists
           </Button>
