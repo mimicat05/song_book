@@ -16,7 +16,6 @@ const songSchema = z.object({
   categoryId: z.coerce.number().optional().nullable(),
   key: z.string().optional(),
   lyrics: z.string().optional(),
-  chords: z.string().optional(),
   notes: z.string().optional(),
 });
 
@@ -39,7 +38,6 @@ export function SongForm({ defaultValues, onSubmit, isLoading }: SongFormProps) 
       categoryId: defaultValues?.categoryId || null,
       key: defaultValues?.key || "",
       lyrics: defaultValues?.lyrics || "",
-      chords: defaultValues?.chords || "",
       notes: defaultValues?.notes || "",
     },
   });
@@ -134,24 +132,6 @@ export function SongForm({ defaultValues, onSubmit, isLoading }: SongFormProps) 
                   <Textarea 
                     placeholder="Write your lyrics here..." 
                     className="min-h-[300px] text-lg font-serif leading-relaxed resize-y bg-card" 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="chords"
-            render={({ field }) => (
-              <FormItem className="col-span-1 md:col-span-2">
-                <FormLabel>Chords</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    placeholder="[C] [G] [Am] [F]" 
-                    className="min-h-[150px] font-mono bg-card text-base" 
                     {...field} 
                   />
                 </FormControl>
