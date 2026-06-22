@@ -24,6 +24,7 @@ export const songVersionsTable = pgTable("song_versions", {
   id: serial("id").primaryKey(),
   songId: integer("song_id").notNull().references(() => songsTable.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
+  title: text("title"),
   lyrics: text("lyrics"),
   chords: text("chords"),
   key: text("key"),

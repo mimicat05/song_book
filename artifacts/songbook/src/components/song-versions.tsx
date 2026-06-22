@@ -36,7 +36,8 @@ import { Plus, Pencil, Trash2, Loader2, Music, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const versionSchema = z.object({
-  name: z.string().min(1, "Version name is required"),
+  name: z.string().min(1, "Language is required"),
+  title: z.string().optional(),
   lyrics: z.string().optional(),
   chords: z.string().optional(),
   key: z.string().optional(),
@@ -60,6 +61,7 @@ function VersionForm({ songId, editing, onClose }: VersionFormProps) {
     resolver: zodResolver(versionSchema),
     defaultValues: {
       name: editing?.name ?? "",
+      title: editing?.title ?? "",
       lyrics: editing?.lyrics ?? "",
       chords: editing?.chords ?? "",
       key: editing?.key ?? "",
@@ -138,6 +140,20 @@ function VersionForm({ songId, editing, onClose }: VersionFormProps) {
               )}
             />
           </div>
+
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Title in this language</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g. Puso Ko (leave blank to use the main title)" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}

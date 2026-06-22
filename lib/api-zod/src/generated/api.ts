@@ -165,6 +165,7 @@ export const ListSongVersionsResponseItem = zod.object({
   "id": zod.number(),
   "songId": zod.number(),
   "name": zod.string(),
+  "title": zod.string().nullish(),
   "lyrics": zod.string().nullish(),
   "chords": zod.string().nullish(),
   "key": zod.string().nullish(),
@@ -187,6 +188,7 @@ export const CreateSongVersionParams = zod.object({
 
 export const CreateSongVersionBody = zod.object({
   "name": zod.string().min(1),
+  "title": zod.string().optional(),
   "lyrics": zod.string().optional(),
   "chords": zod.string().optional(),
   "key": zod.string().optional(),
@@ -207,6 +209,7 @@ export const UpdateSongVersionParams = zod.object({
 
 export const UpdateSongVersionBody = zod.object({
   "name": zod.string().min(1).optional(),
+  "title": zod.string().optional(),
   "lyrics": zod.string().optional(),
   "chords": zod.string().optional(),
   "key": zod.string().optional(),
@@ -217,6 +220,7 @@ export const UpdateSongVersionResponse = zod.object({
   "id": zod.number(),
   "songId": zod.number(),
   "name": zod.string(),
+  "title": zod.string().nullish(),
   "lyrics": zod.string().nullish(),
   "chords": zod.string().nullish(),
   "key": zod.string().nullish(),

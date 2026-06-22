@@ -12,13 +12,14 @@ import {
 
 const router = Router();
 
-function formatSong(song: Record<string, unknown>, category?: Record<string, unknown> | null) {
+function formatSong(song: Record<string, unknown>, category?: Record<string, unknown> | null, versionNames?: string[]) {
   return {
     ...song,
     createdAt: (song.createdAt as Date).toISOString(),
     updatedAt: (song.updatedAt as Date).toISOString(),
     categoryName: category ? (category.name as string) : null,
     categoryColor: category ? (category.color as string) : null,
+    versionNames: versionNames ?? [],
   };
 }
 
@@ -94,7 +95,26 @@ router.get("/songs", async (req, res) => {
     .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(desc(songsTable.updatedAt));
 
-  res.json(rows.map((r) => formatSong(r.song as unknown as Record<string, unknown>, r.category as Record<string, unknown> | null)));
+  // Fetch version names for all returned songs in one query
+  const songIds = rows.map((r) => r.song.id);
+  const versionNameRows = songIds.length > 0
+    ? await db
+        .selectDistinct({ songId: songVersionsTable.songId, name: songVersionsTable.name })
+        .from(songVersionsTable)
+        .where(inArray(songVersionsTable.songId, songIds))
+    : [];
+  const versionNamesBySongId = new Map<number, string[]>();
+  for (const row of versionNameRows) {
+    const existing = versionNamesBySongId.get(row.songId) ?? [];
+    existing.push(row.name);
+    versionNamesBySongId.set(row.songId, existing);
+  }
+
+  res.json(rows.map((r) => formatSong(
+    r.song as unknown as Record<string, unknown>,
+    r.category as Record<string, unknown> | null,
+    versionNamesBySongId.get(r.song.id) ?? []
+  )));
 });
 
 router.post("/songs", async (req, res) => {

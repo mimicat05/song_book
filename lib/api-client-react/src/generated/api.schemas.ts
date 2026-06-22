@@ -47,6 +47,7 @@ export interface Song {
   categoryName?: string | null;
   /** @nullable */
   categoryColor?: string | null;
+  versionNames?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -160,6 +161,8 @@ export interface SongVersion {
   songId: number;
   name: string;
   /** @nullable */
+  title?: string | null;
+  /** @nullable */
   lyrics?: string | null;
   /** @nullable */
   chords?: string | null;
@@ -174,6 +177,7 @@ export interface SongVersion {
 export interface SongVersionInput {
   /** @minLength 1 */
   name: string;
+  title?: string;
   lyrics?: string;
   chords?: string;
   key?: string;
@@ -183,6 +187,7 @@ export interface SongVersionInput {
 export interface SongVersionUpdate {
   /** @minLength 1 */
   name?: string;
+  title?: string;
   lyrics?: string;
   chords?: string;
   key?: string;

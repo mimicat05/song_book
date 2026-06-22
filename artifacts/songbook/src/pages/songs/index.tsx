@@ -115,6 +115,15 @@ export default function SongsList() {
                       {song.artist && song.key && <span>•</span>}
                       {song.key && <span>Key of {song.key}</span>}
                     </div>
+                    {song.versionNames && song.versionNames.length > 0 && (
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        {song.versionNames.map((vname) => (
+                          <span key={vname} className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
+                            {vname === "Tagalog" ? "🇵🇭" : "🇺🇸"} {vname}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   {song.categoryName && (
                     <div className="flex items-center">
