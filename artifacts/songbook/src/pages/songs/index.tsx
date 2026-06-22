@@ -67,7 +67,7 @@ function SongCard({ song }: { song: Song }) {
 
 function VersionCard({ song, version }: { song: Song; version: { name: string; title?: string | null } }) {
   const flag = LANG_FLAG[version.name] ?? "🌐";
-  const versionTitle = version.title && version.title !== song.title ? version.title : null;
+  const versionTitle = version.title || null;
 
   return (
     <Link href={`/songs/${song.id}`}>
