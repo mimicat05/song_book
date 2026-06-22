@@ -36,7 +36,6 @@ export default function Dashboard() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-4xl font-serif text-foreground tracking-tight">Welcome back</h1>
-          <p className="text-lg text-muted-foreground mt-2">Your collection is waiting.</p>
         </div>
         <div className="flex gap-3">
           <Link href="/songs/new">

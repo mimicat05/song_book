@@ -92,9 +92,9 @@ function VersionForm({ songId, editing, onClose }: VersionFormProps) {
   };
 
   return (
-    <div className="border border-border rounded-xl p-6 bg-card space-y-5">
+    <div className="bg-card p-6 md:p-8 rounded-xl border border-card-border shadow-sm space-y-8">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-base">
+        <h3 className="text-2xl font-serif text-foreground tracking-tight">
           {editing ? `Edit "${editing.name}"` : "Add New Version"}
         </h3>
         <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
@@ -103,8 +103,8 @@ function VersionForm({ songId, editing, onClose }: VersionFormProps) {
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={form.control}
               name="name"
@@ -113,15 +113,28 @@ function VersionForm({ songId, editing, onClose }: VersionFormProps) {
                   <FormLabel>Language *</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-card">
                         <SelectValue placeholder="Select language" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="English">English</SelectItem>
-                      <SelectItem value="Tagalog">Tagalog</SelectItem>
+                      <SelectItem value="English">🇺🇸 English</SelectItem>
+                      <SelectItem value="Tagalog">🇵🇭 Tagalog</SelectItem>
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title in this language</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Leave blank to use the main title" {...field} className="bg-card" />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -133,7 +146,7 @@ function VersionForm({ songId, editing, onClose }: VersionFormProps) {
                 <FormItem>
                   <FormLabel>Key</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. G Major" {...field} />
+                    <Input placeholder="e.g. G Major" {...field} className="bg-card" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -141,51 +154,40 @@ function VersionForm({ songId, editing, onClose }: VersionFormProps) {
             />
           </div>
 
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Title in this language</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g. Puso Ko (leave blank to use the main title)" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="lyrics"
+              render={({ field }) => (
+                <FormItem className="col-span-1 md:col-span-2">
+                  <FormLabel>Lyrics</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Write the lyrics for this version..."
+                      className="min-h-[300px] text-lg font-serif leading-relaxed resize-y bg-card"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-          <FormField
-            control={form.control}
-            name="lyrics"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Lyrics</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Write the lyrics for this version..."
-                    className="min-h-[200px] font-serif text-base leading-relaxed resize-y bg-background"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-
-          <div className="flex gap-3 pt-1">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
-              Cancel
-            </Button>
-            <Button type="submit" className="flex-1" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : editing ? "Save Changes" : "Add Version"}
-            </Button>
+          <div className="flex justify-end pt-4">
+            <div className="flex gap-3 w-full md:w-auto">
+              <Button type="button" variant="outline" onClick={onClose} className="flex-1 md:flex-none md:min-w-[120px]">
+                Cancel
+              </Button>
+              <Button type="submit" className="flex-1 md:flex-none md:min-w-[150px] text-lg py-6" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Saving...
+                  </>
+                ) : editing ? "Save Changes" : "Add Version"}
+              </Button>
+            </div>
           </div>
         </form>
       </Form>

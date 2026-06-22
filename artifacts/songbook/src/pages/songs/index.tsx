@@ -112,7 +112,6 @@ export default function SongsList() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-4xl font-serif text-foreground tracking-tight">Library</h1>
-          <p className="text-lg text-muted-foreground mt-2">All your songs in one place.</p>
         </div>
         <Link href="/songs/new">
           <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-medium">

@@ -13,7 +13,6 @@ export default function SetlistsList() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-4xl font-serif text-foreground tracking-tight">Setlists</h1>
-          <p className="text-lg text-muted-foreground mt-2">Plan your gigs and performances.</p>
         </div>
         <Link href="/setlists/new">
           <Button className="bg-primary text-primary-foreground font-medium">
