@@ -144,7 +144,7 @@ export default function SongDetail() {
         )}
         {song.tempo && (
           <Badge variant="secondary" className="px-3 py-1.5 text-sm font-medium bg-secondary text-secondary-foreground flex items-center gap-2">
-            <Metronome className="w-4 h-4 opacity-70" />
+            <Timer className="w-4 h-4 opacity-70" />
             {song.tempo} BPM
           </Badge>
         )}
