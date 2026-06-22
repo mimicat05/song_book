@@ -70,6 +70,11 @@ export default defineConfig({
     fs: {
       strict: true,
     },
+    ...(process.env.NODE_ENV !== "production" && {
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    }),
   },
   preview: {
     port,
