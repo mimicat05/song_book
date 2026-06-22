@@ -44,6 +44,20 @@ export function SongForm({ defaultValues, onSubmit, isLoading }: SongFormProps) 
     },
   });
 
+  useEffect(() => {
+    if (defaultValues) {
+      form.reset({
+        title: (defaultValues as any).title || "",
+        artist: (defaultValues as any).artist || "",
+        language: (defaultValues as any).language || "",
+        categoryId: (defaultValues as any).categoryId || null,
+        key: (defaultValues as any).key || "",
+        lyrics: (defaultValues as any).lyrics || "",
+        notes: (defaultValues as any).notes || "",
+      });
+    }
+  }, [defaultValues]);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
