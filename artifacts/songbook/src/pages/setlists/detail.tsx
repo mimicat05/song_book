@@ -13,7 +13,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Search, Plus, X, GripVertical, Calendar, MapPin, Trash2 } from "lucide-react";
+import { ChevronLeft, Search, Plus, X, GripVertical, Calendar, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { format, parseISO } from "date-fns";
@@ -162,20 +162,10 @@ export default function SetlistDetail() {
                 {format(parseISO(setlist.date), 'MMMM d, yyyy')}
               </div>
             )}
-            {setlist.venue && (
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                {setlist.venue}
-              </div>
-            )}
             <div className="flex items-center gap-2 font-medium text-foreground">
               {(setlist.songs ?? []).length} songs
             </div>
           </div>
-          
-          {setlist.description && (
-            <p className="mt-4 text-lg text-foreground/80 max-w-2xl">{setlist.description}</p>
-          )}
         </div>
 
         <div>

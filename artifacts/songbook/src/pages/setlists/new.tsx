@@ -7,14 +7,11 @@ import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Loader2 } from "lucide-react";
 
 const setlistSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  description: z.string().optional(),
-  venue: z.string().optional(),
   date: z.string().optional(),
 });
 
@@ -28,8 +25,6 @@ export default function SetlistNew() {
     resolver: zodResolver(setlistSchema),
     defaultValues: {
       name: "",
-      description: "",
-      venue: "",
       date: "",
     },
   });
@@ -79,48 +74,14 @@ export default function SetlistNew() {
               )}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="venue"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Venue</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g. The Bluebird Cafe" className="bg-card" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Date</FormLabel>
-                    <FormControl>
-                      <Input type="date" className="bg-card block w-full" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
             <FormField
               control={form.control}
-              name="description"
+              name="date"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description / Notes</FormLabel>
+                  <FormLabel>Date</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="Theme, target duration, other details..." 
-                      className="min-h-[100px] bg-card" 
-                      {...field} 
-                    />
+                    <Input type="date" className="bg-card block w-full" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

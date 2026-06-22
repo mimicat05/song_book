@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import { useListSetlists } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { PlusCircle, Calendar, MapPin, ListMusic } from "lucide-react";
+import { PlusCircle, Calendar, ListMusic } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
 export default function SetlistsList() {
@@ -49,9 +49,6 @@ export default function SetlistsList() {
                 <CardContent className="p-6 flex flex-col h-full justify-between">
                   <div>
                     <h3 className="text-xl font-medium font-serif group-hover:text-primary transition-colors">{setlist.name}</h3>
-                    {setlist.description && (
-                      <p className="text-muted-foreground text-sm mt-1 line-clamp-2">{setlist.description}</p>
-                    )}
                   </div>
                   <div className="mt-6 pt-4 border-t border-border flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1.5 font-medium text-foreground">
@@ -62,12 +59,6 @@ export default function SetlistsList() {
                       <div className="flex items-center gap-1.5">
                         <Calendar className="w-4 h-4" />
                         {format(parseISO(setlist.date), 'MMM d, yyyy')}
-                      </div>
-                    )}
-                    {setlist.venue && (
-                      <div className="flex items-center gap-1.5">
-                        <MapPin className="w-4 h-4" />
-                        {setlist.venue}
                       </div>
                     )}
                   </div>
