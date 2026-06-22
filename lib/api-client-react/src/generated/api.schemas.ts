@@ -47,7 +47,7 @@ export interface Song {
   categoryName?: string | null;
   /** @nullable */
   categoryColor?: string | null;
-  versionNames?: string[];
+  versions?: { name: string; title?: string | null }[];
   createdAt: string;
   updatedAt: string;
 }

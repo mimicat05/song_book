@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { useListSongs, useListCategories } from "@workspace/api-client-react";
+import type { Song } from "@workspace/api-client-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, PlusCircle, FilterX } from "lucide-react";
@@ -11,6 +12,83 @@ const LANGUAGES = [
   { value: "English", label: "🇺🇸 English" },
   { value: "Tagalog", label: "🇵🇭 Tagalog" },
 ];
+
+const LANG_FLAG: Record<string, string> = {
+  English: "🇺🇸",
+  Tagalog: "🇵🇭",
+};
+
+function SongCard({ song }: { song: Song }) {
+  return (
+    <Link href={`/songs/${song.id}`}>
+      <Card className="hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer group bg-card border-card-border">
+        <CardContent className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-xl font-medium text-foreground group-hover:text-primary transition-colors font-serif">{song.title}</h3>
+            <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
+              {song.artist && <span>{song.artist}</span>}
+              {song.artist && song.key && <span>•</span>}
+              {song.key && <span>Key of {song.key}</span>}
+            </div>
+          </div>
+          {song.categoryName && (
+            <div className="flex items-center shrink-0">
+              <span
+                className="px-3 py-1 rounded-full text-xs font-medium border"
+                style={{
+                  backgroundColor: `${song.categoryColor}15`,
+                  color: song.categoryColor,
+                  borderColor: `${song.categoryColor}30`
+                }}
+              >
+                {song.categoryName}
+              </span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
+
+function VersionCard({ song, version }: { song: Song; version: { name: string; title?: string | null } }) {
+  const flag = LANG_FLAG[version.name] ?? "🌐";
+  const displayTitle = version.title || song.title;
+
+  return (
+    <Link href={`/songs/${song.id}`}>
+      <Card className="hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer group bg-card border-card-border ml-6 border-l-4" style={{ borderLeftColor: "var(--border)" }}>
+        <CardContent className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border shrink-0">
+                {flag} {version.name}
+              </span>
+              <h3 className="text-lg font-medium text-foreground group-hover:text-primary transition-colors font-serif">{displayTitle}</h3>
+            </div>
+            {song.artist && (
+              <p className="text-sm text-muted-foreground mt-0.5 ml-0">{song.artist}</p>
+            )}
+          </div>
+          {song.categoryName && (
+            <div className="flex items-center shrink-0">
+              <span
+                className="px-3 py-1 rounded-full text-xs font-medium border"
+                style={{
+                  backgroundColor: `${song.categoryColor}15`,
+                  color: song.categoryColor,
+                  borderColor: `${song.categoryColor}30`
+                }}
+              >
+                {song.categoryName}
+              </span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
 
 export default function SongsList() {
   const [search, setSearch] = useState("");
@@ -94,9 +172,9 @@ export default function SongsList() {
           </div>
           <h3 className="text-xl font-serif text-foreground">No songs found</h3>
           <p className="text-muted-foreground mt-2 max-w-sm mx-auto">
-            {search || categoryId ? "Try adjusting your search or filters." : "Your library is empty. Start adding some music."}
+            {search || categoryId || language ? "Try adjusting your search or filters." : "Your library is empty. Start adding some music."}
           </p>
-          {!(search || categoryId) && (
+          {!(search || categoryId || language) && (
             <Link href="/songs/new">
               <Button className="mt-6" variant="outline">Add First Song</Button>
             </Link>
@@ -105,43 +183,12 @@ export default function SongsList() {
       ) : (
         <div className="space-y-3">
           {songs.map((song) => (
-            <Link key={song.id} href={`/songs/${song.id}`}>
-              <Card className="hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer group bg-card border-card-border">
-                <CardContent className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="text-xl font-medium text-foreground group-hover:text-primary transition-colors font-serif">{song.title}</h3>
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                      {song.artist && <span>{song.artist}</span>}
-                      {song.artist && song.key && <span>•</span>}
-                      {song.key && <span>Key of {song.key}</span>}
-                    </div>
-                    {song.versionNames && song.versionNames.length > 0 && (
-                      <div className="flex items-center gap-1.5 mt-1.5">
-                        {song.versionNames.map((vname) => (
-                          <span key={vname} className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
-                            {vname === "Tagalog" ? "🇵🇭" : "🇺🇸"} {vname}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  {song.categoryName && (
-                    <div className="flex items-center">
-                      <span 
-                        className="px-3 py-1 rounded-full text-xs font-medium border"
-                        style={{ 
-                          backgroundColor: `${song.categoryColor}15`,
-                          color: song.categoryColor,
-                          borderColor: `${song.categoryColor}30`
-                        }}
-                      >
-                        {song.categoryName}
-                      </span>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </Link>
+            <div key={song.id} className="space-y-1.5">
+              <SongCard song={song} />
+              {song.versions?.map((version) => (
+                <VersionCard key={`${song.id}-${version.name}`} song={song} version={version} />
+              ))}
+            </div>
           ))}
         </div>
       )}
