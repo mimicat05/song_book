@@ -82,7 +82,7 @@ export default function Dashboard() {
             </Card>
           ) : (
             <div className="space-y-3">
-              {stats.recentSongs.map((song) => (
+              {(stats.recentSongs ?? []).map((song) => (
                 <Link key={song.id} href={`/songs/${song.id}`}>
                   <Card className="hover:border-primary/50 transition-colors cursor-pointer group shadow-sm bg-card border-card-border">
                     <CardContent className="p-4 flex justify-between items-center">
@@ -125,7 +125,7 @@ export default function Dashboard() {
             </Card>
           ) : (
             <div className="grid grid-cols-2 gap-3">
-              {stats.byCategory.map((cat) => (
+              {(stats.byCategory ?? []).map((cat) => (
                 <Link key={cat.categoryId || 'uncategorized'} href={cat.categoryId ? `/songs?categoryId=${cat.categoryId}` : '/songs'}>
                   <Card className="hover:border-primary/50 transition-colors cursor-pointer shadow-sm bg-card border-card-border">
                     <CardContent className="p-4 flex items-center justify-between">

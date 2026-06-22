@@ -169,7 +169,7 @@ export default function SetlistDetail() {
               </div>
             )}
             <div className="flex items-center gap-2 font-medium text-foreground">
-              {setlist.songs.length} songs
+              {(setlist.songs ?? []).length} songs
             </div>
           </div>
           
