@@ -74,18 +74,22 @@ router.get("/songs", async (req, res) => {
     conditions.push(ilike(songsTable.title, `%${queryParams.data.search}%`));
   }
 
-  // Language filter: "Tagalog" means songs that have a version named "Tagalog"
-  if (queryParams.success && queryParams.data.language && queryParams.data.language !== "English") {
+  // Language filter: match songs whose primary language field matches, OR songs that have a version with that language name
+  if (queryParams.success && queryParams.data.language) {
+    const lang = queryParams.data.language;
     const versionRows = await db
       .selectDistinct({ songId: songVersionsTable.songId })
       .from(songVersionsTable)
-      .where(eq(songVersionsTable.name, queryParams.data.language));
-    const songIds = versionRows.map((r) => r.songId);
-    if (songIds.length === 0) {
-      res.json([]);
-      return;
+      .where(eq(songVersionsTable.name, lang));
+    const versionSongIds = versionRows.map((r) => r.songId);
+
+    if (versionSongIds.length > 0) {
+      conditions.push(
+        sql`(${songsTable.language} = ${lang} OR ${songsTable.id} = ANY(ARRAY[${sql.raw(versionSongIds.join(","))}]::int[]))`
+      );
+    } else {
+      conditions.push(eq(songsTable.language, lang));
     }
-    conditions.push(inArray(songsTable.id, songIds));
   }
 
   const rows = await db

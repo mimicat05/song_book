@@ -44,6 +44,8 @@ export interface Song {
   /** @nullable */
   categoryId?: number | null;
   /** @nullable */
+  language?: string | null;
+  /** @nullable */
   categoryName?: string | null;
   /** @nullable */
   categoryColor?: string | null;
@@ -56,6 +58,7 @@ export interface SongInput {
   /** @minLength 1 */
   title: string;
   artist?: string;
+  language?: string;
   lyrics?: string;
   chords?: string;
   key?: string;
@@ -67,6 +70,7 @@ export interface SongUpdate {
   /** @minLength 1 */
   title?: string;
   artist?: string;
+  language?: string;
   lyrics?: string;
   chords?: string;
   key?: string;

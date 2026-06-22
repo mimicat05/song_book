@@ -51,6 +51,7 @@ export const ListSongsResponse = zod.array(ListSongsResponseItem)
 export const CreateSongBody = zod.object({
   "title": zod.string().min(1),
   "artist": zod.string().optional(),
+  "language": zod.string().optional(),
   "lyrics": zod.string().optional(),
   "chords": zod.string().optional(),
   "key": zod.string().optional(),
@@ -95,6 +96,7 @@ export const UpdateSongParams = zod.object({
 export const UpdateSongBody = zod.object({
   "title": zod.string().min(1).optional(),
   "artist": zod.string().optional(),
+  "language": zod.string().optional(),
   "lyrics": zod.string().optional(),
   "chords": zod.string().optional(),
   "key": zod.string().optional(),

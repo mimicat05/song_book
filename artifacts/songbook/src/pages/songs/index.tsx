@@ -18,6 +18,15 @@ const LANG_FLAG: Record<string, string> = {
   Tagalog: "🇵🇭",
 };
 
+function LangBadge({ language }: { language: string }) {
+  const flag = LANG_FLAG[language] ?? "🌐";
+  return (
+    <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
+      {flag} {language}
+    </span>
+  );
+}
+
 function SongCard({ song }: { song: Song }) {
   return (
     <Link href={`/songs/${song.id}`}>
@@ -30,6 +39,11 @@ function SongCard({ song }: { song: Song }) {
               {song.artist && song.key && <span>•</span>}
               {song.key && <span>Key of {song.key}</span>}
             </div>
+            {song.language && (
+              <div className="mt-1.5">
+                <LangBadge language={song.language} />
+              </div>
+            )}
           </div>
           {song.categoryName && (
             <div className="flex items-center shrink-0">

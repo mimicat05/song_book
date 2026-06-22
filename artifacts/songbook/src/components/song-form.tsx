@@ -13,6 +13,7 @@ import { Loader2 } from "lucide-react";
 const songSchema = z.object({
   title: z.string().min(1, "Title is required"),
   artist: z.string().optional(),
+  language: z.string().optional(),
   categoryId: z.coerce.number().optional().nullable(),
   key: z.string().optional(),
   lyrics: z.string().optional(),
@@ -35,6 +36,7 @@ export function SongForm({ defaultValues, onSubmit, isLoading }: SongFormProps) 
     defaultValues: {
       title: defaultValues?.title || "",
       artist: defaultValues?.artist || "",
+      language: (defaultValues as any)?.language || "",
       categoryId: defaultValues?.categoryId || null,
       key: defaultValues?.key || "",
       lyrics: defaultValues?.lyrics || "",
@@ -74,6 +76,32 @@ export function SongForm({ defaultValues, onSubmit, isLoading }: SongFormProps) 
             )}
           />
           
+          <FormField
+            control={form.control}
+            name="language"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Language</FormLabel>
+                <Select
+                  onValueChange={(val) => field.onChange(val === "none" ? "" : val)}
+                  value={field.value || "none"}
+                >
+                  <FormControl>
+                    <SelectTrigger className="bg-card">
+                      <SelectValue placeholder="Select language" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="none">Not specified</SelectItem>
+                    <SelectItem value="English">🇺🇸 English</SelectItem>
+                    <SelectItem value="Tagalog">🇵🇭 Tagalog</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="categoryId"

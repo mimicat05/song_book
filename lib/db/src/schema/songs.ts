@@ -7,6 +7,7 @@ export const songsTable = pgTable("songs", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   artist: text("artist"),
+  language: text("language"),
   lyrics: text("lyrics"),
   chords: text("chords"),
   key: text("key"),
