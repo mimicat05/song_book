@@ -15,9 +15,10 @@ import { ChordChart } from "@/components/chord-chart";
 import { TransposeControl } from "@/components/transpose-control";
 import { transposeText } from "@/lib/transpose";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -107,10 +108,18 @@ function VersionForm({ songId, editing, onClose }: VersionFormProps) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Version Name *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. Tagalog, Live, Acoustic" {...field} />
-                  </FormControl>
+                  <FormLabel>Language *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select language" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="English">English</SelectItem>
+                      <SelectItem value="Tagalog">Tagalog</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -140,24 +149,6 @@ function VersionForm({ songId, editing, onClose }: VersionFormProps) {
                   <Textarea
                     placeholder="Write the lyrics for this version..."
                     className="min-h-[200px] font-serif text-base leading-relaxed resize-y bg-background"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="chords"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Chords</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="[C] [G] [Am] [F]"
-                    className="min-h-[80px] font-mono resize-y bg-background"
                     {...field}
                   />
                 </FormControl>

@@ -15,6 +15,7 @@ import CategoriesList from "@/pages/categories/index";
 import SetlistsList from "@/pages/setlists/index";
 import SetlistNew from "@/pages/setlists/new";
 import SetlistDetail from "@/pages/setlists/detail";
+import LanguagesPage from "@/pages/languages/index";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ function Router() {
         <Route path="/songs/new" component={SongNew} />
         <Route path="/songs/:id" component={SongDetail} />
         <Route path="/songs/:id/edit" component={SongEdit} />
+        <Route path="/languages" component={LanguagesPage} />
         <Route path="/categories" component={CategoriesList} />
         <Route path="/setlists" component={SetlistsList} />
         <Route path="/setlists/new" component={SetlistNew} />
