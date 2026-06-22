@@ -17,7 +17,6 @@ const songSchema = z.object({
   categoryId: z.coerce.number().optional().nullable(),
   key: z.string().optional(),
   lyrics: z.string().optional(),
-  notes: z.string().optional(),
 });
 
 type SongFormValues = z.infer<typeof songSchema>;
@@ -40,7 +39,6 @@ export function SongForm({ defaultValues, onSubmit, isLoading }: SongFormProps) 
       categoryId: defaultValues?.categoryId || null,
       key: defaultValues?.key || "",
       lyrics: defaultValues?.lyrics || "",
-      notes: defaultValues?.notes || "",
     },
   });
 
@@ -53,7 +51,6 @@ export function SongForm({ defaultValues, onSubmit, isLoading }: SongFormProps) 
         categoryId: (defaultValues as any).categoryId || null,
         key: (defaultValues as any).key || "",
         lyrics: (defaultValues as any).lyrics || "",
-        notes: (defaultValues as any).notes || "",
       });
     }
   }, [defaultValues]);
@@ -182,23 +179,6 @@ export function SongForm({ defaultValues, onSubmit, isLoading }: SongFormProps) 
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="notes"
-            render={({ field }) => (
-              <FormItem className="col-span-1 md:col-span-2">
-                <FormLabel>Notes</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    placeholder="Performance notes, tuning, capo..." 
-                    className="min-h-[100px] bg-card" 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
 
         <div className="flex justify-end pt-4">

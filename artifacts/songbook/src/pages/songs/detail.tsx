@@ -143,7 +143,6 @@ export default function SongDetail() {
         mainLyrics={song.lyrics}
         mainChords={song.chords}
         mainKey={song.key}
-        mainNotes={song.notes}
         onVersionChange={setActiveVersionTitle}
       />
     </div>

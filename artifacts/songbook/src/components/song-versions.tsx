@@ -43,7 +43,6 @@ const versionSchema = z.object({
   lyrics: z.string().optional(),
   chords: z.string().optional(),
   key: z.string().optional(),
-  notes: z.string().optional(),
 });
 type VersionFormValues = z.infer<typeof versionSchema>;
 
@@ -67,7 +66,6 @@ function VersionForm({ songId, editing, onClose }: VersionFormProps) {
       lyrics: editing?.lyrics ?? "",
       chords: editing?.chords ?? "",
       key: editing?.key ?? "",
-      notes: editing?.notes ?? "",
     },
   });
 
@@ -175,23 +173,6 @@ function VersionForm({ songId, editing, onClose }: VersionFormProps) {
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="notes"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Notes</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Performance notes for this version..."
-                    className="min-h-[70px] resize-y bg-background"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
           <div className="flex gap-3 pt-1">
             <Button type="button" variant="outline" onClick={onClose} className="flex-1">
@@ -217,7 +198,6 @@ interface SongVersionsPanelProps {
   mainLyrics?: string | null;
   mainChords?: string | null;
   mainKey?: string | null;
-  mainNotes?: string | null;
   onVersionChange?: (versionTitle: string | null) => void;
 }
 
@@ -226,7 +206,6 @@ export function SongVersionsPanel({
   mainLyrics,
   mainChords,
   mainKey,
-  mainNotes,
   onVersionChange,
 }: SongVersionsPanelProps) {
   const { toast } = useToast();
@@ -328,12 +307,6 @@ export function SongVersionsPanel({
                     )}
                   />
                 </div>
-                {mainNotes && (
-                  <div className="bg-[#fff9e6] dark:bg-yellow-900/10 p-5 rounded-xl border border-yellow-200/50">
-                    <p className="text-sm font-semibold uppercase tracking-wider text-yellow-800/70 mb-2 font-mono">Notes</p>
-                    <p className="whitespace-pre-wrap text-foreground/80 font-serif leading-relaxed">{mainNotes}</p>
-                  </div>
-                )}
               </div>
             ) : (
               <div className="bg-card/50 border border-dashed border-border p-10 text-center rounded-xl">
@@ -410,12 +383,6 @@ export function SongVersionsPanel({
                     </div>
                   )}
 
-                  {v.notes && (
-                    <div className="bg-[#fff9e6] dark:bg-yellow-900/10 p-5 rounded-xl border border-yellow-200/50">
-                      <p className="text-sm font-semibold uppercase tracking-wider text-yellow-800/70 mb-2 font-mono">Notes</p>
-                      <p className="whitespace-pre-wrap text-foreground/80 font-serif leading-relaxed">{v.notes}</p>
-                    </div>
-                  )}
                 </div>
               </TabsContent>
             );
