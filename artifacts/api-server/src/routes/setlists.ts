@@ -197,37 +197,39 @@ router.patch("/setlists/:id/songs/:songId", async (req, res) => {
   const targetPosition = parsed.data.position;
   const oldPosition = current.position;
 
-  if (targetPosition !== oldPosition) {
-    if (targetPosition > oldPosition) {
-      await db
-        .update(setlistSongsTable)
-        .set({ position: sql`${setlistSongsTable.position} - 1` })
-        .where(
-          and(
-            eq(setlistSongsTable.setlistId, current.setlistId),
-            gt(setlistSongsTable.position, oldPosition),
-            lte(setlistSongsTable.position, targetPosition)
-          )
-        );
-    } else {
-      await db
-        .update(setlistSongsTable)
-        .set({ position: sql`${setlistSongsTable.position} + 1` })
-        .where(
-          and(
-            eq(setlistSongsTable.setlistId, current.setlistId),
-            gte(setlistSongsTable.position, targetPosition),
-            lt(setlistSongsTable.position, oldPosition)
-          )
-        );
+  const ss = await db.transaction(async (tx) => {
+    if (targetPosition !== oldPosition) {
+      if (targetPosition > oldPosition) {
+        await tx
+          .update(setlistSongsTable)
+          .set({ position: sql`${setlistSongsTable.position} - 1` })
+          .where(
+            and(
+              eq(setlistSongsTable.setlistId, current.setlistId),
+              gt(setlistSongsTable.position, oldPosition),
+              lte(setlistSongsTable.position, targetPosition)
+            )
+          );
+      } else {
+        await tx
+          .update(setlistSongsTable)
+          .set({ position: sql`${setlistSongsTable.position} + 1` })
+          .where(
+            and(
+              eq(setlistSongsTable.setlistId, current.setlistId),
+              gte(setlistSongsTable.position, targetPosition),
+              lt(setlistSongsTable.position, oldPosition)
+            )
+          );
+      }
     }
-  }
-
-  const [ss] = await db
-    .update(setlistSongsTable)
-    .set({ position: targetPosition, notes: parsed.data.notes })
-    .where(eq(setlistSongsTable.id, params.data.songId))
-    .returning();
+    const [updated] = await tx
+      .update(setlistSongsTable)
+      .set({ position: targetPosition, notes: parsed.data.notes })
+      .where(eq(setlistSongsTable.id, params.data.songId))
+      .returning();
+    return updated;
+  });
 
   const [row] = await db
     .select({ song: songsTable, category: categoriesTable })

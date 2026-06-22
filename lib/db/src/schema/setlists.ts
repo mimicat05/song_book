@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, timestamp, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { songsTable } from "./songs";
@@ -19,7 +19,10 @@ export const setlistSongsTable = pgTable("setlist_songs", {
   songId: integer("song_id").notNull().references(() => songsTable.id, { onDelete: "cascade" }),
   position: integer("position").notNull().default(0),
   notes: text("notes"),
-});
+}, (t) => [
+  index("setlist_songs_setlist_id_idx").on(t.setlistId),
+  index("setlist_songs_song_id_idx").on(t.songId),
+]);
 
 export const insertSetlistSchema = createInsertSchema(setlistsTable).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertSetlistSongSchema = createInsertSchema(setlistSongsTable).omit({ id: true });

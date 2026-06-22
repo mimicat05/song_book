@@ -126,7 +126,7 @@ export default function SetlistDetail() {
   const queryClient = useQueryClient();
   const setlistId = parseInt(id || "0", 10);
 
-  const { data: setlist, isLoading, isError } = useGetSetlist(setlistId, { query: { enabled: !!setlistId } });
+  const { data: setlist, isLoading, isError } = useGetSetlist(setlistId, { query: { enabled: !!setlistId } as any });
   const [songSearch, setSongSearch] = useState("");
   const { data: allSongs } = useListSongs({ search: songSearch || undefined });
 

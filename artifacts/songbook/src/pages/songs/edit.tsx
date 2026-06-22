@@ -13,7 +13,7 @@ export default function SongEdit() {
   const queryClient = useQueryClient();
   const songId = parseInt(id || "0", 10);
 
-  const { data: song, isLoading: isFetching } = useGetSong(songId, { query: { enabled: !!songId } });
+  const { data: song, isLoading: isFetching } = useGetSong(songId, { query: { enabled: !!songId } as any });
   const updateSong = useUpdateSong();
 
   const handleSubmit = (data: any) => {
@@ -75,7 +75,14 @@ export default function SongEdit() {
 
       <div className="bg-card p-6 md:p-8 rounded-xl border border-card-border shadow-sm">
         <SongForm 
-          defaultValues={song} 
+          defaultValues={{
+            ...song,
+            key: song.key ?? undefined,
+            artist: song.artist ?? undefined,
+            language: song.language ?? undefined,
+            categoryId: song.categoryId ?? undefined,
+            lyrics: song.lyrics ?? undefined,
+          }} 
           onSubmit={handleSubmit} 
           isLoading={updateSong.isPending} 
         />

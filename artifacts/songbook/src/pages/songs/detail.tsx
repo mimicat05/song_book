@@ -27,7 +27,7 @@ export default function SongDetail() {
   const songId = parseInt(id || "0", 10);
   const [activeVersionTitle, setActiveVersionTitle] = useState<string | null>(null);
 
-  const { data: song, isLoading, isError } = useGetSong(songId, { query: { enabled: !!songId } });
+  const { data: song, isLoading, isError } = useGetSong(songId, { query: { enabled: !!songId } as any });
   const deleteSong = useDeleteSong();
 
   const handleDelete = () => {
@@ -93,7 +93,7 @@ export default function SongDetail() {
                 className="px-3 py-1 rounded-full text-xs font-medium border mt-1 md:mt-0"
                 style={{
                   backgroundColor: `${song.categoryColor}15`,
-                  color: song.categoryColor,
+                  color: song.categoryColor ?? undefined,
                   borderColor: `${song.categoryColor}30`
                 }}
               >

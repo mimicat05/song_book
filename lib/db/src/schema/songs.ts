@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, timestamp, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { categoriesTable } from "./categories";
@@ -15,7 +15,10 @@ export const songsTable = pgTable("songs", {
   categoryId: integer("category_id").references(() => categoriesTable.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+}, (t) => [
+  index("songs_category_id_idx").on(t.categoryId),
+  index("songs_updated_at_idx").on(t.updatedAt),
+]);
 
 export const insertSongSchema = createInsertSchema(songsTable).omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertSong = z.infer<typeof insertSongSchema>;
@@ -32,7 +35,9 @@ export const songVersionsTable = pgTable("song_versions", {
   notes: text("notes"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+}, (t) => [
+  index("song_versions_song_id_idx").on(t.songId),
+]);
 
 export const insertSongVersionSchema = createInsertSchema(songVersionsTable).omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertSongVersion = z.infer<typeof insertSongVersionSchema>;

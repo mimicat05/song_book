@@ -45,7 +45,7 @@ function SongCard({ song }: { song: Song }) {
                 className="px-3 py-1 rounded-full text-xs font-medium border"
                 style={{
                   backgroundColor: `${song.categoryColor}15`,
-                  color: song.categoryColor,
+                  color: song.categoryColor ?? undefined,
                   borderColor: `${song.categoryColor}30`
                 }}
               >
@@ -85,7 +85,7 @@ function VersionCard({ song, version }: { song: Song; version: { name: string; t
                 className="px-3 py-1 rounded-full text-xs font-medium border"
                 style={{
                   backgroundColor: `${song.categoryColor}15`,
-                  color: song.categoryColor,
+                  color: song.categoryColor ?? undefined,
                   borderColor: `${song.categoryColor}30`
                 }}
               >

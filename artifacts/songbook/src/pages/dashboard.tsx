@@ -95,7 +95,7 @@ export default function Dashboard() {
                           className="px-2.5 py-1 rounded-full text-xs font-medium"
                           style={{ 
                             backgroundColor: `${song.categoryColor}15`,
-                            color: song.categoryColor 
+                            color: song.categoryColor ?? undefined 
                           }}
                         >
                           {song.categoryName}
