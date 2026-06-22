@@ -31,7 +31,6 @@ export const ListSongsResponseItem = zod.object({
   "lyrics": zod.string().nullish(),
   "chords": zod.string().nullish(),
   "key": zod.string().nullish(),
-  "tempo": zod.number().nullish(),
   "notes": zod.string().nullish(),
   "categoryId": zod.number().nullish(),
   "categoryName": zod.string().nullish(),
@@ -54,7 +53,6 @@ export const CreateSongBody = zod.object({
   "lyrics": zod.string().optional(),
   "chords": zod.string().optional(),
   "key": zod.string().optional(),
-  "tempo": zod.number().optional(),
   "notes": zod.string().optional(),
   "categoryId": zod.number().optional()
 })
@@ -74,7 +72,6 @@ export const GetSongResponse = zod.object({
   "lyrics": zod.string().nullish(),
   "chords": zod.string().nullish(),
   "key": zod.string().nullish(),
-  "tempo": zod.number().nullish(),
   "notes": zod.string().nullish(),
   "categoryId": zod.number().nullish(),
   "categoryName": zod.string().nullish(),
@@ -100,7 +97,6 @@ export const UpdateSongBody = zod.object({
   "lyrics": zod.string().optional(),
   "chords": zod.string().optional(),
   "key": zod.string().optional(),
-  "tempo": zod.number().optional(),
   "notes": zod.string().optional(),
   "categoryId": zod.number().nullish()
 })
@@ -112,7 +108,6 @@ export const UpdateSongResponse = zod.object({
   "lyrics": zod.string().nullish(),
   "chords": zod.string().nullish(),
   "key": zod.string().nullish(),
-  "tempo": zod.number().nullish(),
   "notes": zod.string().nullish(),
   "categoryId": zod.number().nullish(),
   "categoryName": zod.string().nullish(),
@@ -142,7 +137,6 @@ export const GetSongStatsResponse = zod.object({
   "lyrics": zod.string().nullish(),
   "chords": zod.string().nullish(),
   "key": zod.string().nullish(),
-  "tempo": zod.number().nullish(),
   "notes": zod.string().nullish(),
   "categoryId": zod.number().nullish(),
   "categoryName": zod.string().nullish(),
@@ -351,7 +345,6 @@ export const GetSetlistResponse = zod.object({
   "lyrics": zod.string().nullish(),
   "chords": zod.string().nullish(),
   "key": zod.string().nullish(),
-  "tempo": zod.number().nullish(),
   "notes": zod.string().nullish(),
   "categoryId": zod.number().nullish(),
   "categoryName": zod.string().nullish(),
@@ -451,7 +444,6 @@ export const ReorderSetlistSongResponse = zod.object({
   "lyrics": zod.string().nullish(),
   "chords": zod.string().nullish(),
   "key": zod.string().nullish(),
-  "tempo": zod.number().nullish(),
   "notes": zod.string().nullish(),
   "categoryId": zod.number().nullish(),
   "categoryName": zod.string().nullish(),

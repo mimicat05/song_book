@@ -15,7 +15,6 @@ const songSchema = z.object({
   artist: z.string().optional(),
   categoryId: z.coerce.number().optional().nullable(),
   key: z.string().optional(),
-  tempo: z.coerce.number().optional().nullable(),
   lyrics: z.string().optional(),
   chords: z.string().optional(),
   notes: z.string().optional(),
@@ -39,7 +38,6 @@ export function SongForm({ defaultValues, onSubmit, isLoading }: SongFormProps) 
       artist: defaultValues?.artist || "",
       categoryId: defaultValues?.categoryId || null,
       key: defaultValues?.key || "",
-      tempo: defaultValues?.tempo || null,
       lyrics: defaultValues?.lyrics || "",
       chords: defaultValues?.chords || "",
       notes: defaultValues?.notes || "",
@@ -110,34 +108,19 @@ export function SongForm({ defaultValues, onSubmit, isLoading }: SongFormProps) 
             )}
           />
 
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="key"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Key</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. C Major" {...field} className="bg-card" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="tempo"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tempo (BPM)</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="e.g. 120" {...field} value={field.value || ""} className="bg-card" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          <FormField
+            control={form.control}
+            name="key"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Key</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g. C Major" {...field} className="bg-card" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

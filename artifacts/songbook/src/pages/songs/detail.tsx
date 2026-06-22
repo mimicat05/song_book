@@ -3,7 +3,7 @@ import { useGetSong, useDeleteSong, getListSongsQueryKey, getGetSongStatsQueryKe
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Edit, Trash2, Timer, Music } from "lucide-react";
+import { ChevronLeft, Edit, Trash2, Music } from "lucide-react";
 import { SongVersionsPanel } from "@/components/song-versions";
 import {
   AlertDialog,
@@ -134,15 +134,6 @@ export default function SongDetail() {
             </AlertDialogContent>
           </AlertDialog>
         </div>
-      </div>
-
-      <div className="flex flex-wrap gap-4 pt-2">
-        {song.tempo && (
-          <Badge variant="secondary" className="px-3 py-1.5 text-sm font-medium bg-secondary text-secondary-foreground flex items-center gap-2">
-            <Timer className="w-4 h-4 opacity-70" />
-            {song.tempo} BPM
-          </Badge>
-        )}
       </div>
 
       <SongVersionsPanel

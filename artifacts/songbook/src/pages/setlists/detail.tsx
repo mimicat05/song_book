@@ -292,7 +292,6 @@ export default function SetlistDetail() {
                       <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
                         {setlistSong.song.artist && <span>{setlistSong.song.artist}</span>}
                         {setlistSong.song.key && <span className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs text-foreground/80">{setlistSong.song.key}</span>}
-                        {setlistSong.song.tempo && <span>{setlistSong.song.tempo} bpm</span>}
                       </div>
                     </Link>
                     

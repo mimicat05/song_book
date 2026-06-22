@@ -18,8 +18,6 @@ export interface Song {
   /** @nullable */
   key?: string | null;
   /** @nullable */
-  tempo?: number | null;
-  /** @nullable */
   notes?: string | null;
   /** @nullable */
   categoryId?: number | null;

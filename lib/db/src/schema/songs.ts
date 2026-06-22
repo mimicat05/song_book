@@ -10,7 +10,6 @@ export const songsTable = pgTable("songs", {
   lyrics: text("lyrics"),
   chords: text("chords"),
   key: text("key"),
-  tempo: integer("tempo"),
   notes: text("notes"),
   categoryId: integer("category_id").references(() => categoriesTable.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),

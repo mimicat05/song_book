@@ -40,8 +40,6 @@ export interface Song {
   /** @nullable */
   key?: string | null;
   /** @nullable */
-  tempo?: number | null;
-  /** @nullable */
   notes?: string | null;
   /** @nullable */
   categoryId?: number | null;
@@ -60,7 +58,6 @@ export interface SongInput {
   lyrics?: string;
   chords?: string;
   key?: string;
-  tempo?: number;
   notes?: string;
   categoryId?: number;
 }
@@ -72,7 +69,6 @@ export interface SongUpdate {
   lyrics?: string;
   chords?: string;
   key?: string;
-  tempo?: number;
   notes?: string;
   /** @nullable */
   categoryId?: number | null;

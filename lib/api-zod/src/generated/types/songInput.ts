@@ -13,7 +13,6 @@ export interface SongInput {
   lyrics?: string;
   chords?: string;
   key?: string;
-  tempo?: number;
   notes?: string;
   categoryId?: number;
 }

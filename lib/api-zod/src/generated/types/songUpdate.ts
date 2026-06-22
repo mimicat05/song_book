@@ -13,7 +13,6 @@ export interface SongUpdate {
   lyrics?: string;
   chords?: string;
   key?: string;
-  tempo?: number;
   notes?: string;
   /** @nullable */
   categoryId?: number | null;
