@@ -1,22 +1,27 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Songbook API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: songs
+    description: Song operations
+  - name: categories
+    description: Category operations
+  - name: setlists
+    description: Setlist operations
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +29,356 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /songs:
+    get:
+      operationId: listSongs
+      tags: [songs]
+      summary: List all songs
+      parameters:
+        - name: categoryId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of songs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Song"
+    post:
+      operationId: createSong
+      tags: [songs]
+      summary: Create a song
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SongInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Song"
+
+  /songs/{id}:
+    get:
+      operationId: getSong
+      tags: [songs]
+      summary: Get a song by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Song
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Song"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateSong
+      tags: [songs]
+      summary: Update a song
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SongUpdate"
+      responses:
+        "200":
+          description: Updated song
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Song"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteSong
+      tags: [songs]
+      summary: Delete a song
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /songs/stats:
+    get:
+      operationId: getSongStats
+      tags: [songs]
+      summary: Get song stats (totals by category, recent songs)
+      responses:
+        "200":
+          description: Song statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SongStats"
+
+  /categories:
+    get:
+      operationId: listCategories
+      tags: [categories]
+      summary: List all categories
+      responses:
+        "200":
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+    post:
+      operationId: createCategory
+      tags: [categories]
+      summary: Create a category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+
+  /categories/{id}:
+    patch:
+      operationId: updateCategory
+      tags: [categories]
+      summary: Update a category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+    delete:
+      operationId: deleteCategory
+      tags: [categories]
+      summary: Delete a category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /setlists:
+    get:
+      operationId: listSetlists
+      tags: [setlists]
+      summary: List all setlists
+      responses:
+        "200":
+          description: List of setlists
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Setlist"
+    post:
+      operationId: createSetlist
+      tags: [setlists]
+      summary: Create a setlist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetlistInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Setlist"
+
+  /setlists/{id}:
+    get:
+      operationId: getSetlist
+      tags: [setlists]
+      summary: Get setlist with songs
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Setlist with songs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetlistDetail"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateSetlist
+      tags: [setlists]
+      summary: Update a setlist
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetlistUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Setlist"
+    delete:
+      operationId: deleteSetlist
+      tags: [setlists]
+      summary: Delete a setlist
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /setlists/{id}/songs:
+    post:
+      operationId: addSongToSetlist
+      tags: [setlists]
+      summary: Add a song to a setlist
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetlistSongInput"
+      responses:
+        "201":
+          description: Added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetlistSong"
+
+  /setlists/{id}/songs/{songId}:
+    delete:
+      operationId: removeSongFromSetlist
+      tags: [setlists]
+      summary: Remove a song from a setlist
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: songId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Removed
+    patch:
+      operationId: reorderSetlistSong
+      tags: [setlists]
+      summary: Update song position in setlist
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: songId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetlistSongOrder"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetlistSong"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +389,244 @@ components:
       required:
         - status
 
+    Category:
+      type: object
+      required: [id, name, color, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        color:
+          type: string
+        createdAt:
+          type: string
+
+    CategoryInput:
+      type: object
+      required: [name, color]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        color:
+          type: string
+
+    CategoryUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        color:
+          type: string
+
+    Song:
+      type: object
+      required: [id, title, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        artist:
+          type: ["string", "null"]
+        lyrics:
+          type: ["string", "null"]
+        chords:
+          type: ["string", "null"]
+        key:
+          type: ["string", "null"]
+        tempo:
+          type: ["integer", "null"]
+        notes:
+          type: ["string", "null"]
+        categoryId:
+          type: ["integer", "null"]
+        categoryName:
+          type: ["string", "null"]
+        categoryColor:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    SongInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        artist:
+          type: string
+        lyrics:
+          type: string
+        chords:
+          type: string
+        key:
+          type: string
+        tempo:
+          type: integer
+        notes:
+          type: string
+        categoryId:
+          type: integer
+
+    SongUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        artist:
+          type: string
+        lyrics:
+          type: string
+        chords:
+          type: string
+        key:
+          type: string
+        tempo:
+          type: integer
+        notes:
+          type: string
+        categoryId:
+          type: ["integer", "null"]
+
+    SongStats:
+      type: object
+      required: [total, recentSongs, byCategory]
+      properties:
+        total:
+          type: integer
+        recentSongs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Song"
+        byCategory:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryCount"
+
+    CategoryCount:
+      type: object
+      required: [categoryId, categoryName, categoryColor, count]
+      properties:
+        categoryId:
+          type: ["integer", "null"]
+        categoryName:
+          type: ["string", "null"]
+        categoryColor:
+          type: ["string", "null"]
+        count:
+          type: integer
+
+    Setlist:
+      type: object
+      required: [id, name, createdAt, updatedAt, songCount]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        venue:
+          type: ["string", "null"]
+        date:
+          type: ["string", "null"]
+        songCount:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    SetlistDetail:
+      type: object
+      required: [id, name, createdAt, updatedAt, songs]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        venue:
+          type: ["string", "null"]
+        date:
+          type: ["string", "null"]
+        songs:
+          type: array
+          items:
+            $ref: "#/components/schemas/SetlistSong"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    SetlistSong:
+      type: object
+      required: [id, setlistId, songId, position, song]
+      properties:
+        id:
+          type: integer
+        setlistId:
+          type: integer
+        songId:
+          type: integer
+        position:
+          type: integer
+        notes:
+          type: ["string", "null"]
+        song:
+          $ref: "#/components/schemas/Song"
+
+    SetlistInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        venue:
+          type: string
+        date:
+          type: string
+
+    SetlistUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        venue:
+          type: string
+        date:
+          type: string
+
+    SetlistSongInput:
+      type: object
+      required: [songId]
+      properties:
+        songId:
+          type: integer
+        position:
+          type: integer
+        notes:
+          type: string
+
+    SetlistSongOrder:
+      type: object
+      required: [position]
+      properties:
+        position:
+          type: integer
+        notes:
+          type: string
