@@ -71,17 +71,17 @@ function VersionCard({ song, version }: { song: Song; version: { name: string; t
 
   return (
     <Link href={`/songs/${song.id}`}>
-      <Card className="hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer group bg-card border-card-border ml-6 border-l-4" style={{ borderLeftColor: "var(--border)" }}>
-        <CardContent className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <Card className="hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer group bg-muted/40 border-card-border">
+        <CardContent className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border shrink-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-background text-muted-foreground border border-border shrink-0">
                 {flag} {version.name}
               </span>
-              <h3 className="text-lg font-medium text-foreground group-hover:text-primary transition-colors font-serif">{displayTitle}</h3>
+              <h3 className="text-xl font-medium text-foreground group-hover:text-primary transition-colors font-serif">{displayTitle}</h3>
             </div>
             {song.artist && (
-              <p className="text-sm text-muted-foreground mt-0.5 ml-0">{song.artist}</p>
+              <p className="text-sm text-muted-foreground mt-1">{song.artist}</p>
             )}
           </div>
           {song.categoryName && (

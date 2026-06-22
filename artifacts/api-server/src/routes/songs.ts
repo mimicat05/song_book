@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, songsTable, categoriesTable, songVersionsTable } from "@workspace/db";
-import { eq, desc, ilike, and, sql, inArray } from "drizzle-orm";
+import { eq, desc, ilike, and, sql, inArray, or } from "drizzle-orm";
 import {
   CreateSongBody,
   UpdateSongBody,
@@ -83,13 +83,11 @@ router.get("/songs", async (req, res) => {
       .where(eq(songVersionsTable.name, lang));
     const versionSongIds = versionRows.map((r) => r.songId);
 
+    const langConditions = [eq(songsTable.language, lang)];
     if (versionSongIds.length > 0) {
-      conditions.push(
-        sql`(${songsTable.language} = ${lang} OR ${songsTable.id} = ANY(ARRAY[${sql.raw(versionSongIds.join(","))}]::int[]))`
-      );
-    } else {
-      conditions.push(eq(songsTable.language, lang));
+      langConditions.push(inArray(songsTable.id, versionSongIds));
     }
+    conditions.push(or(...langConditions)!);
   }
 
   const rows = await db
