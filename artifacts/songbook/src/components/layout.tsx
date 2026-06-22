@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Music, ListMusic, Tags, Home, Globe } from "lucide-react";
+import { Music, ListMusic, Tags, Home } from "lucide-react";
 import { ThemeProvider } from "./theme-provider";
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -9,7 +9,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/", label: "Dashboard", icon: Home },
     { href: "/songs", label: "Songs", icon: Music },
     { href: "/setlists", label: "Setlists", icon: ListMusic },
-    { href: "/languages", label: "Language", icon: Globe },
     { href: "/categories", label: "Categories", icon: Tags },
   ];
 

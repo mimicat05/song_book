@@ -6,11 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Search, PlusCircle, FilterX } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
+const LANGUAGES = [
+  { value: undefined, label: "All" },
+  { value: "English", label: "🇺🇸 English" },
+  { value: "Tagalog", label: "🇵🇭 Tagalog" },
+];
+
 export default function SongsList() {
   const [search, setSearch] = useState("");
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
+  const [language, setLanguage] = useState<string | undefined>(undefined);
 
-  const { data: songs, isLoading } = useListSongs({ search: search || undefined, categoryId });
+  const { data: songs, isLoading } = useListSongs({ search: search || undefined, categoryId, language });
   const { data: categories } = useListCategories();
 
   return (
@@ -28,15 +35,29 @@ export default function SongsList() {
         </Link>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search titles, lyrics, artists..."
-            className="pl-9 bg-card border-card-border"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search titles, lyrics, artists..."
+              className="pl-9 bg-card border-card-border"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+            {LANGUAGES.map((lang) => (
+              <Button
+                key={lang.label}
+                variant={language === lang.value ? "secondary" : "outline"}
+                className="rounded-full shrink-0"
+                onClick={() => setLanguage(lang.value)}
+              >
+                {lang.label}
+              </Button>
+            ))}
+          </div>
         </div>
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
           <Button
@@ -44,7 +65,7 @@ export default function SongsList() {
             className="rounded-full shrink-0"
             onClick={() => setCategoryId(undefined)}
           >
-            All Songs
+            All Categories
           </Button>
           {categories?.map(cat => (
             <Button

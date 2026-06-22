@@ -192,5 +192,6 @@ export interface SongVersionUpdate {
 export type ListSongsParams = {
 categoryId?: number;
 search?: string;
+language?: string;
 };
 

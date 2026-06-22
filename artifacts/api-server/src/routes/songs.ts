@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { db, songsTable, categoriesTable } from "@workspace/db";
-import { eq, desc, ilike, and, sql } from "drizzle-orm";
+import { db, songsTable, categoriesTable, songVersionsTable } from "@workspace/db";
+import { eq, desc, ilike, and, sql, inArray } from "drizzle-orm";
 import {
   CreateSongBody,
   UpdateSongBody,
@@ -62,6 +62,7 @@ router.get("/songs", async (req, res) => {
   const queryParams = ListSongsQueryParams.safeParse({
     categoryId: req.query.categoryId ? Number(req.query.categoryId) : undefined,
     search: req.query.search,
+    language: req.query.language,
   });
 
   const conditions = [];
@@ -70,6 +71,20 @@ router.get("/songs", async (req, res) => {
   }
   if (queryParams.success && queryParams.data.search) {
     conditions.push(ilike(songsTable.title, `%${queryParams.data.search}%`));
+  }
+
+  // Language filter: "Tagalog" means songs that have a version named "Tagalog"
+  if (queryParams.success && queryParams.data.language && queryParams.data.language !== "English") {
+    const versionRows = await db
+      .selectDistinct({ songId: songVersionsTable.songId })
+      .from(songVersionsTable)
+      .where(eq(songVersionsTable.name, queryParams.data.language));
+    const songIds = versionRows.map((r) => r.songId);
+    if (songIds.length === 0) {
+      res.json([]);
+      return;
+    }
+    conditions.push(inArray(songsTable.id, songIds));
   }
 
   const rows = await db

@@ -21,7 +21,8 @@ export const HealthCheckResponse = zod.object({
  */
 export const ListSongsQueryParams = zod.object({
   "categoryId": zod.coerce.number().optional(),
-  "search": zod.coerce.string().optional()
+  "search": zod.coerce.string().optional(),
+  "language": zod.coerce.string().optional()
 })
 
 export const ListSongsResponseItem = zod.object({
