@@ -40,6 +40,7 @@ import { useToast } from "@/hooks/use-toast";
 const versionSchema = z.object({
   name: z.string().min(1, "Language is required"),
   title: z.string().optional(),
+  artist: z.string().optional(),
   lyrics: z.string().optional(),
   chords: z.string().optional(),
   key: z.string().optional(),
@@ -63,6 +64,7 @@ function VersionForm({ songId, editing, onClose }: VersionFormProps) {
     defaultValues: {
       name: editing?.name ?? "",
       title: editing?.title ?? "",
+      artist: editing?.artist ?? "",
       lyrics: editing?.lyrics ?? "",
       chords: editing?.chords ?? "",
       key: editing?.key ?? "",
@@ -113,6 +115,19 @@ function VersionForm({ songId, editing, onClose }: VersionFormProps) {
                   <FormLabel>Title in this language</FormLabel>
                   <FormControl>
                     <Input placeholder="Leave blank to use the main title" {...field} className="text-lg bg-card" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="artist"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Artist</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. Leonard Cohen" {...field} className="bg-card" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -9,6 +9,8 @@
 export interface SongVersionInput {
   /** @minLength 1 */
   name: string;
+  title?: string;
+  artist?: string;
   lyrics?: string;
   chords?: string;
   key?: string;

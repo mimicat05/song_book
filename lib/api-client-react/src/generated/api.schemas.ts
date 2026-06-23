@@ -34,6 +34,8 @@ export interface Song {
   /** @nullable */
   artist?: string | null;
   /** @nullable */
+  language?: string | null;
+  /** @nullable */
   lyrics?: string | null;
   /** @nullable */
   chords?: string | null;
@@ -44,12 +46,9 @@ export interface Song {
   /** @nullable */
   categoryId?: number | null;
   /** @nullable */
-  language?: string | null;
-  /** @nullable */
   categoryName?: string | null;
   /** @nullable */
   categoryColor?: string | null;
-  versions?: { name: string; title?: string | null }[];
   createdAt: string;
   updatedAt: string;
 }
@@ -167,6 +166,8 @@ export interface SongVersion {
   /** @nullable */
   title?: string | null;
   /** @nullable */
+  artist?: string | null;
+  /** @nullable */
   lyrics?: string | null;
   /** @nullable */
   chords?: string | null;
@@ -182,6 +183,7 @@ export interface SongVersionInput {
   /** @minLength 1 */
   name: string;
   title?: string;
+  artist?: string;
   lyrics?: string;
   chords?: string;
   key?: string;
@@ -192,6 +194,7 @@ export interface SongVersionUpdate {
   /** @minLength 1 */
   name?: string;
   title?: string;
+  artist?: string;
   lyrics?: string;
   chords?: string;
   key?: string;
@@ -201,6 +204,5 @@ export interface SongVersionUpdate {
 export type ListSongsParams = {
 categoryId?: number;
 search?: string;
-language?: string;
 };
 

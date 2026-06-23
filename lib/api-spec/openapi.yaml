@@ -739,6 +739,10 @@ components:
           type: integer
         name:
           type: string
+        title:
+          type: ["string", "null"]
+        artist:
+          type: ["string", "null"]
         lyrics:
           type: ["string", "null"]
         chords:
@@ -759,6 +763,10 @@ components:
         name:
           type: string
           minLength: 1
+        title:
+          type: string
+        artist:
+          type: string
         lyrics:
           type: string
         chords:
@@ -774,6 +782,10 @@ components:
         name:
           type: string
           minLength: 1
+        title:
+          type: string
+        artist:
+          type: string
         lyrics:
           type: string
         chords:

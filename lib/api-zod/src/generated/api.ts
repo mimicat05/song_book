@@ -21,8 +21,7 @@ export const HealthCheckResponse = zod.object({
  */
 export const ListSongsQueryParams = zod.object({
   "categoryId": zod.coerce.number().optional(),
-  "search": zod.coerce.string().optional(),
-  "language": zod.coerce.string().optional()
+  "search": zod.coerce.string().optional()
 })
 
 export const ListSongsResponseItem = zod.object({
@@ -172,6 +171,7 @@ export const ListSongVersionsResponseItem = zod.object({
   "songId": zod.number(),
   "name": zod.string(),
   "title": zod.string().nullish(),
+  "artist": zod.string().nullish(),
   "lyrics": zod.string().nullish(),
   "chords": zod.string().nullish(),
   "key": zod.string().nullish(),
@@ -195,6 +195,7 @@ export const CreateSongVersionParams = zod.object({
 export const CreateSongVersionBody = zod.object({
   "name": zod.string().min(1),
   "title": zod.string().optional(),
+  "artist": zod.string().optional(),
   "lyrics": zod.string().optional(),
   "chords": zod.string().optional(),
   "key": zod.string().optional(),
@@ -216,6 +217,7 @@ export const UpdateSongVersionParams = zod.object({
 export const UpdateSongVersionBody = zod.object({
   "name": zod.string().min(1).optional(),
   "title": zod.string().optional(),
+  "artist": zod.string().optional(),
   "lyrics": zod.string().optional(),
   "chords": zod.string().optional(),
   "key": zod.string().optional(),
@@ -227,6 +229,7 @@ export const UpdateSongVersionResponse = zod.object({
   "songId": zod.number(),
   "name": zod.string(),
   "title": zod.string().nullish(),
+  "artist": zod.string().nullish(),
   "lyrics": zod.string().nullish(),
   "chords": zod.string().nullish(),
   "key": zod.string().nullish(),
@@ -353,6 +356,7 @@ export const GetSetlistResponse = zod.object({
   "id": zod.number(),
   "title": zod.string(),
   "artist": zod.string().nullish(),
+  "language": zod.string().nullish(),
   "lyrics": zod.string().nullish(),
   "chords": zod.string().nullish(),
   "key": zod.string().nullish(),
@@ -452,6 +456,7 @@ export const ReorderSetlistSongResponse = zod.object({
   "id": zod.number(),
   "title": zod.string(),
   "artist": zod.string().nullish(),
+  "language": zod.string().nullish(),
   "lyrics": zod.string().nullish(),
   "chords": zod.string().nullish(),
   "key": zod.string().nullish(),

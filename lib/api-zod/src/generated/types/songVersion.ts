@@ -11,6 +11,10 @@ export interface SongVersion {
   songId: number;
   name: string;
   /** @nullable */
+  title?: string | null;
+  /** @nullable */
+  artist?: string | null;
+  /** @nullable */
   lyrics?: string | null;
   /** @nullable */
   chords?: string | null;
