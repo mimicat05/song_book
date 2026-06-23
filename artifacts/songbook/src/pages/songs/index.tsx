@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { useListSongs, useListCategories } from "@workspace/api-client-react";
-import type { Song } from "@workspace/api-client-react";
+import { useLocalSongs, useLocalCategories, type SongWithMeta } from "@/lib/use-local-db";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, PlusCircle, FilterX } from "lucide-react";
@@ -21,7 +20,7 @@ function LangBadge({ language }: { language: string }) {
   );
 }
 
-function SongCard({ song }: { song: Song }) {
+function SongCard({ song }: { song: SongWithMeta }) {
   return (
     <Link href={`/songs/${song.id}`}>
       <Card className="hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer group bg-card border-card-border">
@@ -46,7 +45,7 @@ function SongCard({ song }: { song: Song }) {
                 style={{
                   backgroundColor: `${song.categoryColor}15`,
                   color: song.categoryColor ?? undefined,
-                  borderColor: `${song.categoryColor}30`
+                  borderColor: `${song.categoryColor}30`,
                 }}
               >
                 {song.categoryName}
@@ -59,9 +58,7 @@ function SongCard({ song }: { song: Song }) {
   );
 }
 
-function VersionCard({ song, version }: { song: Song; version: { name: string; title?: string | null } }) {
-  const versionTitle = version.title || null;
-
+function VersionCard({ song, version }: { song: SongWithMeta; version: { name: string; title: string | null } }) {
   return (
     <Link href={`/songs/${song.id}`}>
       <Card className="hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer group bg-muted/40 border-card-border">
@@ -71,8 +68,8 @@ function VersionCard({ song, version }: { song: Song; version: { name: string; t
               <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-background text-muted-foreground border border-border shrink-0">
                 {version.name}
               </span>
-              {versionTitle && (
-                <h3 className="text-xl font-medium text-foreground group-hover:text-primary transition-colors font-serif">{versionTitle}</h3>
+              {version.title && (
+                <h3 className="text-xl font-medium text-foreground group-hover:text-primary transition-colors font-serif">{version.title}</h3>
               )}
             </div>
             {song.artist && (
@@ -86,7 +83,7 @@ function VersionCard({ song, version }: { song: Song; version: { name: string; t
                 style={{
                   backgroundColor: `${song.categoryColor}15`,
                   color: song.categoryColor ?? undefined,
-                  borderColor: `${song.categoryColor}30`
+                  borderColor: `${song.categoryColor}30`,
                 }}
               >
                 {song.categoryName}
@@ -104,8 +101,8 @@ export default function SongsList() {
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
   const [language, setLanguage] = useState<string | undefined>(undefined);
 
-  const { data: songs, isLoading } = useListSongs({ search: search || undefined, categoryId, language });
-  const { data: categories } = useListCategories();
+  const { data: songs, isLoading } = useLocalSongs({ search: search || undefined, categoryId, language });
+  const { data: categories } = useLocalCategories();
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -153,7 +150,7 @@ export default function SongsList() {
           >
             All Categories
           </Button>
-          {categories?.map(cat => (
+          {categories?.map((cat) => (
             <Button
               key={cat.id}
               variant={categoryId === cat.id ? "secondary" : "outline"}

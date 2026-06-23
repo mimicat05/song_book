@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useParams, Link, useLocation } from "wouter";
-import { useGetSong, useDeleteSong, getListSongsQueryKey, getGetSongStatsQueryKey } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useLocalSong } from "@/lib/use-local-db";
+import { deleteSong } from "@/lib/local-ops";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Edit, Trash2, Music } from "lucide-react";
+import { ChevronLeft, Edit, Trash2 } from "lucide-react";
 import { SongVersionsPanel } from "@/components/song-versions";
 import {
   AlertDialog,
@@ -17,41 +17,35 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 
 export default function SongDetail() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const songId = parseInt(id || "0", 10);
   const [activeVersionTitle, setActiveVersionTitle] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const { data: song, isLoading, isError } = useGetSong(songId, { query: { enabled: !!songId } as any });
-  const deleteSong = useDeleteSong();
+  const { data: song, isLoading, isError } = useLocalSong(songId);
 
-  const handleDelete = () => {
-    deleteSong.mutate(
-      { id: songId },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListSongsQueryKey() });
-          queryClient.invalidateQueries({ queryKey: getGetSongStatsQueryKey() });
-          toast({
-            title: "Song deleted",
-            description: "The song has been removed from your library.",
-          });
-          setLocation("/songs");
-        },
-        onError: () => {
-          toast({
-            title: "Error",
-            description: "Could not delete the song.",
-            variant: "destructive",
-          });
-        },
-      }
-    );
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteSong(songId);
+      toast({
+        title: "Song deleted",
+        description: "The song has been removed from your library.",
+      });
+      setLocation("/songs");
+    } catch {
+      toast({
+        title: "Error",
+        description: "Could not delete the song.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   if (isLoading) {
@@ -94,7 +88,7 @@ export default function SongDetail() {
                 style={{
                   backgroundColor: `${song.categoryColor}15`,
                   color: song.categoryColor ?? undefined,
-                  borderColor: `${song.categoryColor}30`
+                  borderColor: `${song.categoryColor}30`,
                 }}
               >
                 {song.categoryName}
@@ -116,7 +110,7 @@ export default function SongDetail() {
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="outline" className="text-destructive border-border hover:bg-destructive/10">
+              <Button variant="outline" className="text-destructive border-border hover:bg-destructive/10" disabled={isDeleting}>
                 <Trash2 className="w-4 h-4" />
               </Button>
             </AlertDialogTrigger>

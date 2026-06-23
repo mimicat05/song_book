@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useListCategories, useCreateCategory, useUpdateCategory, useDeleteCategory, getListCategoriesQueryKey } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useLocalCategories } from "@/lib/use-local-db";
+import { createCategory, updateCategory, deleteCategory } from "@/lib/local-ops";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -21,6 +21,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import type { LocalCategory } from "@/lib/local-db";
 
 const categorySchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -28,64 +29,61 @@ const categorySchema = z.object({
 });
 
 export default function CategoriesList() {
-  const { data: categories, isLoading } = useListCategories();
-  const createCategory = useCreateCategory();
-  const updateCategory = useUpdateCategory();
-  const deleteCategory = useDeleteCategory();
-  const queryClient = useQueryClient();
+  const { data: categories, isLoading } = useLocalCategories();
   const { toast } = useToast();
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isBusy, setIsBusy] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(categorySchema),
-    defaultValues: {
-      name: "",
-      color: "#f97316", // default orange/warm
-    },
+    defaultValues: { name: "", color: "#f97316" },
   });
 
-  const handleCreate = (data: z.infer<typeof categorySchema>) => {
-    createCategory.mutate(
-      { data },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListCategoriesQueryKey() });
-          toast({ title: "Category created" });
-          setIsCreating(false);
-          form.reset();
-        },
-      }
-    );
+  const handleCreate = async (data: z.infer<typeof categorySchema>) => {
+    setIsBusy(true);
+    try {
+      const { isTemp } = await createCategory(data);
+      toast({
+        title: "Category created",
+        description: isTemp ? "Saved locally — will sync when online." : undefined,
+      });
+      setIsCreating(false);
+      form.reset();
+    } catch {
+      toast({ title: "Error creating category", variant: "destructive" });
+    } finally {
+      setIsBusy(false);
+    }
   };
 
-  const handleUpdate = (id: number, data: z.infer<typeof categorySchema>) => {
-    updateCategory.mutate(
-      { id, data },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListCategoriesQueryKey() });
-          toast({ title: "Category updated" });
-          setEditingId(null);
-        },
-      }
-    );
+  const handleUpdate = async (id: number, data: z.infer<typeof categorySchema>) => {
+    setIsBusy(true);
+    try {
+      await updateCategory(id, data);
+      toast({ title: "Category updated" });
+      setEditingId(null);
+    } catch {
+      toast({ title: "Error updating category", variant: "destructive" });
+    } finally {
+      setIsBusy(false);
+    }
   };
 
-  const handleDelete = (id: number) => {
-    deleteCategory.mutate(
-      { id },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListCategoriesQueryKey() });
-          toast({ title: "Category deleted" });
-        },
-      }
-    );
+  const handleDelete = async (id: number) => {
+    setIsBusy(true);
+    try {
+      await deleteCategory(id);
+      toast({ title: "Category deleted" });
+    } catch {
+      toast({ title: "Error deleting category", variant: "destructive" });
+    } finally {
+      setIsBusy(false);
+    }
   };
 
-  const startEdit = (cat: any) => {
+  const startEdit = (cat: LocalCategory) => {
     form.reset({ name: cat.name, color: cat.color });
     setEditingId(cat.id);
     setIsCreating(false);
@@ -144,12 +142,8 @@ export default function CategoriesList() {
                     )}
                   />
                   <div className="flex gap-2">
-                    <Button type="button" variant="outline" onClick={() => setIsCreating(false)}>
-                      Cancel
-                    </Button>
-                    <Button type="submit" disabled={createCategory.isPending}>
-                      Save
-                    </Button>
+                    <Button type="button" variant="outline" onClick={() => setIsCreating(false)}>Cancel</Button>
+                    <Button type="submit" disabled={isBusy}>Save</Button>
                   </div>
                 </form>
               </Form>
@@ -174,9 +168,7 @@ export default function CategoriesList() {
                           name="name"
                           render={({ field }) => (
                             <FormItem className="flex-1">
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
+                              <FormControl><Input {...field} /></FormControl>
                             </FormItem>
                           )}
                         />
@@ -195,7 +187,7 @@ export default function CategoriesList() {
                           <Button type="button" variant="ghost" size="icon" onClick={() => setEditingId(null)}>
                             <X className="w-4 h-4" />
                           </Button>
-                          <Button type="submit" size="icon" disabled={updateCategory.isPending}>
+                          <Button type="submit" size="icon" disabled={isBusy}>
                             <Save className="w-4 h-4" />
                           </Button>
                         </div>
@@ -207,12 +199,16 @@ export default function CategoriesList() {
                     <div className="flex items-center gap-3">
                       <div className="w-5 h-5 rounded-full shadow-sm" style={{ backgroundColor: cat.color }} />
                       <span className="font-medium text-lg">{cat.name}</span>
+                      {cat.syncPending && (
+                        <span className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-1.5 py-0.5 rounded">
+                          pending sync
+                        </span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2 opacity-0 hover:opacity-100 focus-within:opacity-100 transition-opacity" style={{ opacity: 1 }}>
+                    <div className="flex items-center gap-2">
                       <Button variant="ghost" size="icon" onClick={() => startEdit(cat)}>
                         <Edit2 className="w-4 h-4 text-muted-foreground" />
                       </Button>
-                      
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10">

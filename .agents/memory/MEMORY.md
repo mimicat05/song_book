@@ -1,0 +1,2 @@
+- [Hybrid local/server data layer](hybrid-data-layer.md) — all reads from IndexedDB (Dexie), writes dual-write local+server; use liveQuery not dexie-react-hooks
+- [Offline write IDs](offline-write-ids.md) — offline creates use negative temp IDs persisted via syncMeta.lastTempId; URL uses temp ID until sync replaces it

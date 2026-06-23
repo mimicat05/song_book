@@ -3,14 +3,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
-  useListSongVersions,
   useCreateSongVersion,
   useUpdateSongVersion,
   useDeleteSongVersion,
-  getListSongVersionsQueryKey,
 } from "@workspace/api-client-react";
 import type { SongVersion } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { db } from "@/lib/local-db";
+import { useLocalSongVersions } from "@/lib/use-local-db";
 import { ChordChart } from "@/components/chord-chart";
 import { TransposeControl } from "@/components/transpose-control";
 import { transposeText } from "@/lib/transpose";
@@ -33,9 +32,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, Loader2, Music, X } from "lucide-react";
-
-
 import { useToast } from "@/hooks/use-toast";
+import { isTempId } from "@/lib/local-db";
 
 const versionSchema = z.object({
   name: z.string().min(1, "Language is required"),
@@ -55,7 +53,6 @@ interface VersionFormProps {
 
 function VersionForm({ songId, editing, onClose }: VersionFormProps) {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const createVersion = useCreateSongVersion();
   const updateVersion = useUpdateSongVersion();
 
@@ -73,15 +70,40 @@ function VersionForm({ songId, editing, onClose }: VersionFormProps) {
 
   const isSubmitting = createVersion.isPending || updateVersion.isPending;
 
-  const handleSubmit = (data: VersionFormValues) => {
-    const onSuccess = () => {
-      queryClient.invalidateQueries({ queryKey: getListSongVersionsQueryKey(songId) });
+  const handleSubmit = async (data: VersionFormValues) => {
+    const now = new Date().toISOString();
+
+    if (isTempId(songId)) {
+      toast({
+        title: "Sync required",
+        description: "Please sync this song to the server before adding versions.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const onSuccess = async (result: any) => {
+      await db.songVersions.put({
+        id: result.id,
+        songId,
+        name: result.name,
+        title: result.title ?? null,
+        artist: result.artist ?? null,
+        lyrics: result.lyrics ?? null,
+        chords: result.chords ?? null,
+        key: result.key ?? null,
+        createdAt: result.createdAt ?? now,
+        updatedAt: result.updatedAt ?? now,
+        syncPending: false,
+        pendingDelete: false,
+      });
       toast({
         title: editing ? "Version updated" : "Version added",
         description: `"${data.name}" has been ${editing ? "updated" : "added"}.`,
       });
       onClose();
     };
+
     const onError = () => {
       toast({ title: "Error", description: "Could not save the version.", variant: "destructive" });
     };
@@ -218,20 +240,12 @@ interface SongVersionsPanelProps {
   onVersionChange?: (versionTitle: string | null) => void;
 }
 
-export function SongVersionsPanel({
-  songId,
-  mainLyrics,
-  mainChords,
-  mainKey,
-  onVersionChange,
-}: SongVersionsPanelProps) {
+export function SongVersionsPanel({ songId, mainLyrics, mainChords, mainKey, onVersionChange }: SongVersionsPanelProps) {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const { data: versions = [], isLoading } = useListSongVersions(songId);
+  const { data: versions, isLoading } = useLocalSongVersions(songId);
   const deleteVersion = useDeleteSongVersion();
 
   const [formMode, setFormMode] = useState<null | "add" | SongVersion>(null);
-  // semitones per tab: "original" | version id as string
   const [semitones, setSemitones] = useState<Record<string, number>>({});
 
   const openAdd = () => setFormMode("add");
@@ -246,8 +260,8 @@ export function SongVersionsPanel({
     deleteVersion.mutate(
       { id: songId, versionId: v.id },
       {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListSongVersionsQueryKey(songId) });
+        onSuccess: async () => {
+          await db.songVersions.delete(v.id);
           toast({ title: "Version deleted", description: `"${v.name}" has been removed.` });
         },
         onError: () => {
@@ -259,6 +273,19 @@ export function SongVersionsPanel({
 
   const hasMainContent = mainLyrics || mainChords;
   const editingVersion = formMode !== null && formMode !== "add" ? (formMode as SongVersion) : null;
+
+  const versionsAsServerType: SongVersion[] = versions.map((v) => ({
+    id: v.id,
+    songId: v.songId,
+    name: v.name,
+    title: v.title ?? null,
+    artist: v.artist ?? null,
+    lyrics: v.lyrics ?? null,
+    chords: v.chords ?? null,
+    key: v.key ?? null,
+    createdAt: v.createdAt,
+    updatedAt: v.updatedAt,
+  }));
 
   return (
     <div className="space-y-4">
@@ -285,22 +312,17 @@ export function SongVersionsPanel({
           if (val === "original") {
             onVersionChange?.(null);
           } else {
-            const v = versions.find((v) => String(v.id) === val);
+            const v = versionsAsServerType.find((v) => String(v.id) === val);
             onVersionChange?.(v?.title ?? null);
           }
         }}>
           <TabsList className="flex flex-wrap gap-1 h-auto bg-muted/50 p-1">
-            <TabsTrigger value="original" className="text-sm">
-              Original
-            </TabsTrigger>
-            {versions.map((v) => (
-              <TabsTrigger key={v.id} value={String(v.id)} className="text-sm">
-                {v.name}
-              </TabsTrigger>
+            <TabsTrigger value="original" className="text-sm">Original</TabsTrigger>
+            {versionsAsServerType.map((v) => (
+              <TabsTrigger key={v.id} value={String(v.id)} className="text-sm">{v.name}</TabsTrigger>
             ))}
           </TabsList>
 
-          {/* ── Original tab ── */}
           <TabsContent value="original" className="mt-4">
             {hasMainContent ? (
               <div className="space-y-4">
@@ -311,10 +333,7 @@ export function SongVersionsPanel({
                       Key: {mainKey}
                     </Badge>
                   )}
-                  <TransposeControl
-                    semitones={getSemitones("original")}
-                    onChange={(n) => setTabSemitones("original", n)}
-                  />
+                  <TransposeControl semitones={getSemitones("original")} onChange={(n) => setTabSemitones("original", n)} />
                 </div>
                 <div className="bg-white dark:bg-zinc-950 rounded-xl border border-border shadow-sm p-6 overflow-x-auto">
                   <ChordChart
@@ -332,8 +351,7 @@ export function SongVersionsPanel({
             )}
           </TabsContent>
 
-          {/* ── Additional version tabs ── */}
-          {versions.map((v) => {
+          {versionsAsServerType.map((v) => {
             const tabKey = String(v.id);
             const st = getSemitones(tabKey);
             return (
@@ -341,12 +359,8 @@ export function SongVersionsPanel({
                 <div className="space-y-4">
                   {(v.title || v.artist) && (
                     <div>
-                      {v.title && (
-                        <p className="text-lg font-serif text-foreground">{v.title}</p>
-                      )}
-                      {v.artist && (
-                        <p className="text-sm italic text-muted-foreground">by {v.artist}</p>
-                      )}
+                      {v.title && <p className="text-lg font-serif text-foreground">{v.title}</p>}
+                      {v.artist && <p className="text-sm italic text-muted-foreground">by {v.artist}</p>}
                     </div>
                   )}
                   <div className="flex flex-wrap items-center justify-between gap-3">
@@ -357,10 +371,7 @@ export function SongVersionsPanel({
                           Key: {v.key}
                         </Badge>
                       )}
-                      <TransposeControl
-                        semitones={st}
-                        onChange={(n) => setTabSemitones(tabKey, n)}
-                      />
+                      <TransposeControl semitones={st} onChange={(n) => setTabSemitones(tabKey, n)} />
                     </div>
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" onClick={() => openEdit(v)}>
@@ -409,7 +420,6 @@ export function SongVersionsPanel({
                       </Button>
                     </div>
                   )}
-
                 </div>
               </TabsContent>
             );

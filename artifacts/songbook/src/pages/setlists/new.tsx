@@ -1,6 +1,5 @@
+import { useState } from "react";
 import { useLocation, Link } from "wouter";
-import { useCreateSetlist, getListSetlistsQueryKey } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -9,6 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Loader2 } from "lucide-react";
+import { createSetlist } from "@/lib/local-ops";
 
 const setlistSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -18,31 +18,27 @@ const setlistSchema = z.object({
 export default function SetlistNew() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const createSetlist = useCreateSetlist();
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(setlistSchema),
-    defaultValues: {
-      name: "",
-      date: "",
-    },
+    defaultValues: { name: "", date: "" },
   });
 
-  const onSubmit = (data: z.infer<typeof setlistSchema>) => {
-    createSetlist.mutate(
-      { data },
-      {
-        onSuccess: (setlist) => {
-          queryClient.invalidateQueries({ queryKey: getListSetlistsQueryKey() });
-          toast({ title: "Setlist created" });
-          setLocation(`/setlists/${setlist.id}`);
-        },
-        onError: () => {
-          toast({ title: "Error", description: "Failed to create setlist", variant: "destructive" });
-        },
-      }
-    );
+  const onSubmit = async (data: z.infer<typeof setlistSchema>) => {
+    setIsLoading(true);
+    try {
+      const { id, isTemp } = await createSetlist({ name: data.name, date: data.date || undefined });
+      toast({
+        title: "Setlist created",
+        description: isTemp ? "Saved locally — will sync when online." : undefined,
+      });
+      setLocation(`/setlists/${id}`);
+    } catch {
+      toast({ title: "Error", description: "Failed to create setlist", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -73,7 +69,6 @@ export default function SetlistNew() {
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="date"
@@ -87,10 +82,9 @@ export default function SetlistNew() {
                 </FormItem>
               )}
             />
-
             <div className="flex justify-end pt-4">
-              <Button type="submit" disabled={createSetlist.isPending} className="min-w-[150px]">
-                {createSetlist.isPending ? (
+              <Button type="submit" disabled={isLoading} className="min-w-[150px]">
+                {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Creating...

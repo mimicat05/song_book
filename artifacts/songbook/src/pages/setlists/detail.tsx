@@ -1,16 +1,7 @@
 import { useState } from "react";
 import { useParams, Link, useLocation } from "wouter";
-import { 
-  useGetSetlist, 
-  useAddSongToSetlist, 
-  useRemoveSongFromSetlist, 
-  useReorderSetlistSong,
-  useDeleteSetlist,
-  useListSongs,
-  getGetSetlistQueryKey,
-  getListSetlistsQueryKey
-} from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useLocalSetlist, useLocalSongs } from "@/lib/use-local-db";
+import { addSongToSetlist, removeSongFromSetlist, reorderSetlistSong, deleteSetlist } from "@/lib/local-ops";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Search, Plus, X, GripVertical, Calendar, Trash2 } from "lucide-react";
@@ -55,29 +46,12 @@ type SetlistSongEntry = {
   id: number;
   position: number;
   songId: number;
-  song: {
-    id: number;
-    title: string;
-    artist?: string | null;
-    key?: string | null;
-  };
+  song: { id: number; title: string; artist?: string | null; key?: string | null };
 };
 
-function SortableSongRow({
-  entry,
-  onRemove,
-}: {
-  entry: SetlistSongEntry;
-  onRemove: (id: number) => void;
-}) {
+function SortableSongRow({ entry, onRemove }: { entry: SetlistSongEntry; onRemove: (id: number) => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: entry.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 10 : undefined,
-  };
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1, zIndex: isDragging ? 10 : undefined };
 
   return (
     <div ref={setNodeRef} style={style}>
@@ -90,7 +64,6 @@ function SortableSongRow({
           >
             <GripVertical className="w-4 h-4" />
           </div>
-
           <div className="p-4 flex-1 flex items-center justify-between gap-4">
             <Link href={`/songs/${entry.song.id}`} className="flex-1 hover:underline decoration-primary/50 underline-offset-4">
               <div className="font-medium text-lg font-serif">{entry.song.title}</div>
@@ -103,7 +76,6 @@ function SortableSongRow({
                 )}
               </div>
             </Link>
-
             <Button
               variant="ghost"
               size="icon"
@@ -123,64 +95,51 @@ export default function SetlistDetail() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const setlistId = parseInt(id || "0", 10);
 
-  const { data: setlist, isLoading, isError } = useGetSetlist(setlistId, { query: { enabled: !!setlistId } as any });
+  const { data: setlist, isLoading, isError } = useLocalSetlist(setlistId);
   const [songSearch, setSongSearch] = useState("");
-  const { data: allSongs } = useListSongs({ search: songSearch || undefined });
-
-  const addSong = useAddSongToSetlist();
-  const removeSong = useRemoveSongFromSetlist();
-  const reorderSong = useReorderSetlistSong();
-  const deleteSetlist = useDeleteSetlist();
+  const { data: allSongs } = useLocalSongs({ search: songSearch || undefined });
 
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [localOrder, setLocalOrder] = useState<number[] | null>(null);
+  const [isBusy, setIsBusy] = useState(false);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
-  );
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
-  const handleAddSong = (songId: number) => {
-    addSong.mutate(
-      { id: setlistId, data: { songId } },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getGetSetlistQueryKey(setlistId) });
-          setLocalOrder(null);
-          toast({ title: "Song added to setlist" });
-        },
-      }
-    );
+  const handleAddSong = async (songId: number) => {
+    setIsBusy(true);
+    try {
+      await addSongToSetlist(setlistId, songId);
+      setLocalOrder(null);
+      toast({ title: "Song added to setlist" });
+    } catch {
+      toast({ title: "Could not add song", variant: "destructive" });
+    } finally {
+      setIsBusy(false);
+    }
   };
 
-  const handleRemoveSong = (setlistSongEntryId: number) => {
-    removeSong.mutate(
-      { id: setlistId, songId: setlistSongEntryId },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getGetSetlistQueryKey(setlistId) });
-          setLocalOrder(null);
-        },
-      }
-    );
+  const handleRemoveSong = async (setlistSongEntryId: number) => {
+    try {
+      await removeSongFromSetlist(setlistSongEntryId);
+      setLocalOrder(null);
+    } catch {
+      toast({ title: "Could not remove song", variant: "destructive" });
+    }
   };
 
-  const handleDelete = () => {
-    deleteSetlist.mutate(
-      { id: setlistId },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListSetlistsQueryKey() });
-          toast({ title: "Setlist deleted" });
-          setLocation("/setlists");
-        },
-      }
-    );
+  const handleDelete = async () => {
+    try {
+      await deleteSetlist(setlistId);
+      toast({ title: "Setlist deleted" });
+      setLocation("/setlists");
+    } catch {
+      toast({ title: "Could not delete setlist", variant: "destructive" });
+    }
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id || !sortedSongs) return;
 
@@ -192,19 +151,12 @@ export default function SetlistDetail() {
     setLocalOrder(reordered.map((s) => s.id));
 
     const newPosition = newIndex + 1;
-    reorderSong.mutate(
-      { id: setlistId, songId: sortedSongs[oldIndex].id, data: { position: newPosition } },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getGetSetlistQueryKey(setlistId) });
-          setLocalOrder(null);
-        },
-        onError: () => {
-          setLocalOrder(null);
-          toast({ title: "Could not reorder", variant: "destructive" });
-        },
-      }
-    );
+    try {
+      await reorderSetlistSong(setlistId, sortedSongs[oldIndex].id, newPosition);
+    } catch {
+      setLocalOrder(null);
+      toast({ title: "Could not reorder", variant: "destructive" });
+    }
   };
 
   if (isLoading) {
@@ -213,9 +165,7 @@ export default function SetlistDetail() {
         <div className="h-12 w-64 bg-muted rounded"></div>
         <div className="h-8 w-48 bg-muted rounded"></div>
         <div className="space-y-3 mt-8">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-16 bg-muted rounded-xl"></div>
-          ))}
+          {[1, 2, 3, 4].map((i) => <div key={i} className="h-16 bg-muted rounded-xl"></div>)}
         </div>
       </div>
     );
@@ -251,7 +201,6 @@ export default function SetlistDetail() {
             </Button>
           </Link>
           <h1 className="text-4xl md:text-5xl font-serif text-foreground tracking-tight mb-4">{setlist.name}</h1>
-
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-muted-foreground">
             {setlist.date && (
               <div className="flex items-center gap-2">
@@ -282,9 +231,7 @@ export default function SetlistDetail() {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
-                  Delete
-                </AlertDialogAction>
+                <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -294,7 +241,6 @@ export default function SetlistDetail() {
       <div className="border-t border-border pt-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-serif">Lineup</h2>
-
           <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -328,7 +274,7 @@ export default function SetlistDetail() {
                         <div className="font-medium">{song.title}</div>
                         {song.artist && <div className="text-xs text-muted-foreground">{song.artist}</div>}
                       </div>
-                      <Button size="sm" variant="secondary" onClick={() => handleAddSong(song.id)}>
+                      <Button size="sm" variant="secondary" disabled={isBusy} onClick={() => handleAddSong(song.id)}>
                         Add
                       </Button>
                     </div>
@@ -342,9 +288,7 @@ export default function SetlistDetail() {
         {sortedSongs.length === 0 ? (
           <div className="bg-card/50 border border-dashed border-border rounded-xl p-12 text-center">
             <p className="text-muted-foreground mb-4">No songs in this setlist yet.</p>
-            <Button variant="outline" onClick={() => setAddDialogOpen(true)}>
-              Browse Library
-            </Button>
+            <Button variant="outline" onClick={() => setAddDialogOpen(true)}>Browse Library</Button>
           </div>
         ) : (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>

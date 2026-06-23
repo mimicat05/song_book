@@ -1,11 +1,11 @@
-import { useGetSongStats } from "@workspace/api-client-react";
 import { Link } from "wouter";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlusCircle, Music, Clock, FolderGit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLocalSongStats } from "@/lib/use-local-db";
 
 export default function Dashboard() {
-  const { data: stats, isLoading, isError } = useGetSongStats();
+  const { data: stats, isLoading, isError } = useLocalSongStats();
 
   if (isLoading) {
     return (
@@ -26,7 +26,7 @@ export default function Dashboard() {
   if (isError || !stats) {
     return (
       <div className="py-12 text-center text-muted-foreground">
-        <p>Could not load dashboard stats. Please try again later.</p>
+        <p>Could not load dashboard. Please try again later.</p>
       </div>
     );
   }
@@ -91,11 +91,11 @@ export default function Dashboard() {
                         {song.artist && <p className="text-sm text-muted-foreground">{song.artist}</p>}
                       </div>
                       {song.categoryName && (
-                        <span 
+                        <span
                           className="px-2.5 py-1 rounded-full text-xs font-medium"
-                          style={{ 
+                          style={{
                             backgroundColor: `${song.categoryColor}15`,
-                            color: song.categoryColor ?? undefined 
+                            color: song.categoryColor ?? undefined,
                           }}
                         >
                           {song.categoryName}

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useListCategories } from "@workspace/api-client-react";
+import { useLocalCategories } from "@/lib/use-local-db";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,7 +28,7 @@ interface SongFormProps {
 }
 
 export function SongForm({ defaultValues, onSubmit, isLoading }: SongFormProps) {
-  const { data: categories } = useListCategories();
+  const { data: categories } = useLocalCategories();
 
   const form = useForm<SongFormValues>({
     resolver: zodResolver(songSchema),
@@ -86,7 +86,7 @@ export function SongForm({ defaultValues, onSubmit, isLoading }: SongFormProps) 
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="language"
@@ -168,17 +168,16 @@ export function SongForm({ defaultValues, onSubmit, isLoading }: SongFormProps) 
               <FormItem className="col-span-1 md:col-span-2">
                 <FormLabel>Lyrics</FormLabel>
                 <FormControl>
-                  <Textarea 
-                    placeholder="Write your lyrics here..." 
-                    className="min-h-[300px] text-lg font-serif leading-relaxed resize-y bg-card" 
-                    {...field} 
+                  <Textarea
+                    placeholder="Write your lyrics here..."
+                    className="min-h-[300px] text-lg font-serif leading-relaxed resize-y bg-card"
+                    {...field}
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
         </div>
 
         <div className="flex justify-end pt-4">

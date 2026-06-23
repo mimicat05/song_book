@@ -1,12 +1,12 @@
 import { Link } from "wouter";
-import { useListSetlists } from "@workspace/api-client-react";
+import { useLocalSetlists } from "@/lib/use-local-db";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PlusCircle, Calendar, ListMusic } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
 export default function SetlistsList() {
-  const { data: setlists, isLoading } = useListSetlists();
+  const { data: setlists, isLoading } = useLocalSetlists();
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">

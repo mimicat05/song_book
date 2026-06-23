@@ -1,40 +1,42 @@
+import { useState } from "react";
 import { useLocation } from "wouter";
-import { useCreateSong, getListSongsQueryKey, getGetSongStatsQueryKey } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { SongForm } from "@/components/song-form";
 import { ChevronLeft } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { createSong } from "@/lib/local-ops";
 
 export default function SongNew() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const createSong = useCreateSong();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (data: any) => {
-    createSong.mutate(
-      { data },
-      {
-        onSuccess: (song) => {
-          queryClient.invalidateQueries({ queryKey: getListSongsQueryKey() });
-          queryClient.invalidateQueries({ queryKey: getGetSongStatsQueryKey() });
-          toast({
-            title: "Song saved",
-            description: "Your new song has been added to the library.",
-          });
-          setLocation(`/songs/${song.id}`);
-        },
-        onError: () => {
-          toast({
-            title: "Error",
-            description: "Could not save the song. Please try again.",
-            variant: "destructive",
-          });
-        },
+  const handleSubmit = async (data: any) => {
+    setIsLoading(true);
+    try {
+      const { id, isTemp } = await createSong(data);
+      if (isTemp) {
+        toast({
+          title: "Song saved locally",
+          description: "You're offline. This song will sync to the server when you reconnect.",
+        });
+      } else {
+        toast({
+          title: "Song saved",
+          description: "Your new song has been added to the library.",
+        });
       }
-    );
+      setLocation(`/songs/${id}`);
+    } catch {
+      toast({
+        title: "Error",
+        description: "Could not save the song. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -50,7 +52,7 @@ export default function SongNew() {
       </div>
 
       <div className="bg-card p-6 md:p-8 rounded-xl border border-card-border shadow-sm">
-        <SongForm onSubmit={handleSubmit} isLoading={createSong.isPending} />
+        <SongForm onSubmit={handleSubmit} isLoading={isLoading} />
       </div>
     </div>
   );

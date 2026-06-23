@@ -5,7 +5,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import { Layout } from "@/components/layout";
 
-// Pages
 import Dashboard from "@/pages/dashboard";
 import SongsList from "@/pages/songs/index";
 import SongNew from "@/pages/songs/new";
@@ -16,6 +15,7 @@ import SetlistsList from "@/pages/setlists/index";
 import SetlistNew from "@/pages/setlists/new";
 import SetlistDetail from "@/pages/setlists/detail";
 import LanguagesPage from "@/pages/languages/index";
+import Settings from "@/pages/settings";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +33,7 @@ function Router() {
         <Route path="/setlists" component={SetlistsList} />
         <Route path="/setlists/new" component={SetlistNew} />
         <Route path="/setlists/:id" component={SetlistDetail} />
+        <Route path="/settings" component={Settings} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { useParams, useLocation, Link } from "wouter";
-import { useGetSong, useUpdateSong, getListSongsQueryKey, getGetSongQueryKey, getGetSongStatsQueryKey } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useLocalSong } from "@/lib/use-local-db";
+import { updateSong } from "@/lib/local-ops";
 import { useToast } from "@/hooks/use-toast";
 import { SongForm } from "@/components/song-form";
 import { ChevronLeft } from "lucide-react";
@@ -10,35 +11,31 @@ export default function SongEdit() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const songId = parseInt(id || "0", 10);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const { data: song, isLoading: isFetching } = useGetSong(songId, { query: { enabled: !!songId } as any });
-  const updateSong = useUpdateSong();
+  const { data: song, isLoading: isFetching } = useLocalSong(songId);
 
-  const handleSubmit = (data: any) => {
-    updateSong.mutate(
-      { id: songId, data },
-      {
-        onSuccess: (updatedSong) => {
-          queryClient.invalidateQueries({ queryKey: getListSongsQueryKey() });
-          queryClient.invalidateQueries({ queryKey: getGetSongQueryKey(songId) });
-          queryClient.invalidateQueries({ queryKey: getGetSongStatsQueryKey() });
-          toast({
-            title: "Changes saved",
-            description: "Your song has been updated.",
-          });
-          setLocation(`/songs/${updatedSong.id}`);
-        },
-        onError: () => {
-          toast({
-            title: "Error",
-            description: "Could not save the changes. Please try again.",
-            variant: "destructive",
-          });
-        },
-      }
-    );
+  const handleSubmit = async (data: any) => {
+    setIsSaving(true);
+    try {
+      await updateSong(songId, data);
+      toast({
+        title: "Changes saved",
+        description: navigator.onLine
+          ? "Your song has been updated."
+          : "Saved locally — will sync when you reconnect.",
+      });
+      setLocation(`/songs/${songId}`);
+    } catch {
+      toast({
+        title: "Error",
+        description: "Could not save the changes. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (isFetching) {
@@ -74,17 +71,17 @@ export default function SongEdit() {
       </div>
 
       <div className="bg-card p-6 md:p-8 rounded-xl border border-card-border shadow-sm">
-        <SongForm 
+        <SongForm
           defaultValues={{
-            ...song,
-            key: song.key ?? undefined,
+            title: song.title,
             artist: song.artist ?? undefined,
             language: song.language ?? undefined,
             categoryId: song.categoryId ?? undefined,
+            key: song.key ?? undefined,
             lyrics: song.lyrics ?? undefined,
-          }} 
-          onSubmit={handleSubmit} 
-          isLoading={updateSong.isPending} 
+          }}
+          onSubmit={handleSubmit}
+          isLoading={isSaving}
         />
       </div>
     </div>
