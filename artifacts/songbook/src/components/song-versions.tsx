@@ -339,6 +339,16 @@ export function SongVersionsPanel({
             return (
               <TabsContent key={v.id} value={tabKey} className="mt-4">
                 <div className="space-y-4">
+                  {(v.title || v.artist) && (
+                    <div>
+                      {v.title && (
+                        <p className="text-lg font-serif text-foreground">{v.title}</p>
+                      )}
+                      {v.artist && (
+                        <p className="text-sm italic text-muted-foreground">by {v.artist}</p>
+                      )}
+                    </div>
+                  )}
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-3">
                       {v.key && (
