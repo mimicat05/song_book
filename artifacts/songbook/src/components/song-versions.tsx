@@ -107,6 +107,19 @@ function VersionForm({ songId, editing, onClose }: VersionFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title in this language</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Leave blank to use the main title" {...field} className="text-lg bg-card" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
@@ -128,25 +141,12 @@ function VersionForm({ songId, editing, onClose }: VersionFormProps) {
             />
             <FormField
               control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title in this language</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Leave blank to use the main title" {...field} className="bg-card" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
               name="key"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Key</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. G Major" {...field} className="bg-card" />
+                    <Input placeholder="e.g. C Major" {...field} className="bg-card" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -163,7 +163,7 @@ function VersionForm({ songId, editing, onClose }: VersionFormProps) {
                   <FormLabel>Lyrics</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Write the lyrics for this version..."
+                      placeholder="Write your lyrics here..."
                       className="min-h-[300px] text-lg font-serif leading-relaxed resize-y bg-card"
                       {...field}
                     />
